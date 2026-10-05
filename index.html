@@ -138,6 +138,26 @@ button{cursor:pointer;border:0;background:none}
 .people .p i{flex:0 0 36px;height:36px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);display:grid;place-items:center;font-style:normal;font-family:var(--head);font-weight:800;font-size:20px}
 .hint{color:var(--muted);font-size:14px;margin:0 2px 14px}
 
+/* ====== LISTAS (cards) ====== */
+.list-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;min-height:82px;transition:transform .08s}
+.list-card:active{transform:scale(.995);background:var(--bg)}
+.list-card .lc-info{flex:1;min-width:0}
+.list-card .lc-title{font-family:var(--head);font-size:24px;font-weight:700;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-card .lc-sub{font-size:13px;color:var(--muted);margin-top:3px;font-weight:500}
+.list-card .lc-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
+.list-card .lc-bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+.list-card .lc-chev{font-size:32px;color:var(--muted);font-family:var(--head);font-weight:700;flex:0 0 auto}
+
+.detail-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.detail-head .back{flex:0 0 44px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:22px;font-weight:700;display:grid;place-items:center}
+.detail-head .back:active{background:var(--bg)}
+.detail-head .title-wrap{flex:1;min-width:0}
+.detail-head input.title{width:100%;height:44px;background:transparent;border:2px solid transparent;border-radius:10px;padding:0 8px;font-family:var(--head);font-size:26px;font-weight:700;color:var(--ink)}
+.detail-head input.title:hover{border-color:var(--line)}
+.detail-head input.title:focus{border-color:var(--coletivo);outline:none;background:var(--surface)}
+.detail-head .del{flex:0 0 44px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:18px;display:grid;place-items:center}
+.detail-head .del:active{background:var(--bg);border-color:var(--danger)}
+
 .addrow{display:flex;gap:8px}
 .addrow .input{flex:1}
 .addrow button{flex:0 0 auto;width:56px;height:52px;border-radius:10px;background:var(--ink);color:var(--surface);font-family:var(--head);font-size:28px;font-weight:800}
@@ -153,7 +173,6 @@ button{cursor:pointer;border:0;background:none}
 .sh.done .box{background:var(--ok);border-color:var(--ok);color:#fff}
 .sh .price{flex:0 0 auto;height:40px;padding:0 10px;border-radius:8px;background:var(--yellow);color:var(--on-yellow);font-weight:700;font-size:14px;border:2px solid var(--on-yellow)}
 .sub-h{margin:18px 2px 8px;font-family:var(--head);font-size:20px;font-weight:700}
-.tabs button{font-size:13px}
 
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
 .dock .in{max-width:560px;margin:0 auto}
@@ -165,7 +184,7 @@ button{cursor:pointer;border:0;background:none}
 .tabs button em{font-style:normal;font-size:20px}
 .tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 3px 0 var(--yellow);font-weight:700}
 
-.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;white-space:nowrap}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1}
 .sync{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;background:var(--surface);border:2px solid var(--ink);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;z-index:8;opacity:0;transition:opacity .3s}
 .sync.on{opacity:1}
@@ -183,17 +202,35 @@ button{cursor:pointer;border:0;background:none}
 
   <div class="sync" id="sync">Conectando…</div>
 
+  <!-- LISTA DE COMPRAS (cards + detalhe) -->
   <section class="panel on" id="p-lista" role="tabpanel">
-    <div class="addrow">
-      <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
-      <button type="button" id="sh-add" aria-label="Adicionar à lista">+</button>
+    <!-- Tela de cards -->
+    <div id="lists-view">
+      <div id="lists-cards"></div>
+      <button class="btn ghost" id="add-list" style="margin-top:6px">+ Nova lista</button>
     </div>
-    <p class="hint" style="margin:8px 2px 0">Dica: escreva vários separados por vírgula (arroz, feijão, café).</p>
-    <div class="progress"><span id="sh-count"></span><button type="button" class="link" id="sh-clear" hidden>Limpar comprados</button></div>
-    <div class="bar"><i id="sh-bar"></i></div>
-    <div id="sh-list"></div>
+
+    <!-- Tela de detalhe de uma lista -->
+    <div id="list-detail" style="display:none">
+      <div class="detail-head">
+        <button type="button" class="back" id="back-lists" aria-label="Voltar">‹</button>
+        <div class="title-wrap">
+          <input type="text" class="title" id="list-title" maxlength="40" aria-label="Nome da lista">
+        </div>
+        <button type="button" class="del" id="del-list" aria-label="Excluir lista">🗑️</button>
+      </div>
+      <div class="addrow">
+        <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
+        <button type="button" id="sh-add" aria-label="Adicionar à lista">+</button>
+      </div>
+      <p class="hint" style="margin:8px 2px 0">Dica: escreva vários separados por vírgula (arroz, feijão, café).</p>
+      <div class="progress"><span id="sh-count"></span><button type="button" class="link" id="sh-clear" hidden>Limpar comprados</button></div>
+      <div class="bar"><i id="sh-bar"></i></div>
+      <div id="sh-list"></div>
+    </div>
   </section>
 
+  <!-- ITENS (carrinho) -->
   <section class="panel" id="p-itens" role="tabpanel">
     <div class="form" id="form">
       <div class="field">
@@ -236,12 +273,14 @@ button{cursor:pointer;border:0;background:none}
     <div id="lista"></div>
   </section>
 
+  <!-- RESUMO -->
   <section class="panel" id="p-resumo" role="tabpanel">
     <div class="grand"><div class="l">Total do carrinho<small id="g-sub"></small></div><div class="v" id="g-total">R$ 0,00</div></div>
     <div id="cards"></div>
     <button class="btn primary" id="copiar">Copiar resumo para o WhatsApp</button>
   </section>
 
+  <!-- PESSOAS -->
   <section class="panel" id="p-pessoas" role="tabpanel">
     <p class="hint">Toque no nome para editar. Máximo de 20 pessoas.</p>
     <div class="people" id="people"></div>
@@ -268,7 +307,7 @@ button{cursor:pointer;border:0;background:none}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
-// ⚠️ COLE AQUI o seu firebaseConfig (o que o Firebase te deu)
+// ⚠️ COLE AQUI o seu firebaseConfig
 const firebaseConfig = {
   apiKey: "COLE_AQUI",
   authDomain: "COLE_AQUI",
@@ -282,21 +321,26 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const DOC_REF = doc(db, 'conedu2026', 'estado');
 
-// ---------- Estado local ----------
 const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
-let state = { people: defaultNames.slice(), items: [], shopping: [] };
 
-// Identificador único deste cliente (uma aba = um cliente)
+function newListId(){ return 'list-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+let state = {
+  people: defaultNames.slice(),
+  items: [],
+  shoppingLists: [{ id: newListId(), name: 'Lista de compras', items: [] }]
+};
+
 const clientId = Math.random().toString(36).slice(2) + Date.now();
-
-// Flags de sincronização
-let applyingRemote = false;   // estamos aplicando um snapshot remoto
-let pendingWrite = false;     // temos alterações locais não salvas ainda
+let applyingRemote = false;
+let pendingWrite = false;
 let saveTimeout = null;
+
+let viewListId = null;   // null = tela de cards; senão, id da lista aberta
 
 const $ = id => document.getElementById(id);
 
-// ---------- Utilidades ----------
+// ---------- utilidades ----------
 function norm(s){ return String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 function brl(c){ return (c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
@@ -316,6 +360,7 @@ function split(total, idx){
   return out;
 }
 function itemTotal(it){ return it.price * it.qty; }
+function currentList(){ return state.shoppingLists.find(x => x.id === viewListId); }
 
 function toast(msg){
   const t = $('toast');
@@ -332,7 +377,7 @@ function setSync(txt, cls){
   if(cls === 'ok' || cls === 'err') setSync.h = setTimeout(() => el.classList.remove('on'), 1500);
 }
 
-// ---------- Salvar no Firestore ----------
+// ---------- salvar no Firestore ----------
 function saveToCloud(){
   if(applyingRemote) return;
   pendingWrite = true;
@@ -342,7 +387,7 @@ function saveToCloud(){
     const payload = {
       people: state.people.slice(),
       items: JSON.parse(JSON.stringify(state.items)),
-      shopping: JSON.parse(JSON.stringify(state.shopping)),
+      shoppingLists: JSON.parse(JSON.stringify(state.shoppingLists)),
       updatedAt: Date.now(),
       lastWriter: clientId
     };
@@ -359,34 +404,44 @@ function saveToCloud(){
   }, 150);
 }
 
-// ---------- Ouvir mudanças do Firestore ----------
+// ---------- listener do Firestore ----------
 onSnapshot(DOC_REF, snapshot => {
   if(!snapshot.exists()){
     setDoc(DOC_REF, {
-      people: state.people, items: [], shopping: [],
-      updatedAt: Date.now(), lastWriter: clientId
+      people: state.people,
+      items: [],
+      shoppingLists: state.shoppingLists,
+      updatedAt: Date.now(),
+      lastWriter: clientId
     });
     return;
   }
   const data = snapshot.data();
   if(!data || !data.people) return;
-
-  // Ignora o eco da nossa própria escrita
   if(data.lastWriter === clientId) return;
-
-  // Se temos alterações locais ainda não salvas, não sobrescreve
   if(pendingWrite) return;
 
   applyingRemote = true;
   state.people = data.people.slice();
   state.items = data.items ? JSON.parse(JSON.stringify(data.items)) : [];
-  state.shopping = data.shopping ? JSON.parse(JSON.stringify(data.shopping)) : [];
 
-  // Se a pessoa estava editando algo que sumiu, cancela a edição
+  // Migração de formato antigo (shopping array) → novo (shoppingLists)
+  if(Array.isArray(data.shoppingLists) && data.shoppingLists.length){
+    state.shoppingLists = JSON.parse(JSON.stringify(data.shoppingLists));
+  }else if(Array.isArray(data.shopping) && data.shopping.length){
+    state.shoppingLists = [{ id: newListId(), name: 'Lista de compras', items: JSON.parse(JSON.stringify(data.shopping)) }];
+  }else if(!state.shoppingLists || !state.shoppingLists.length){
+    state.shoppingLists = [{ id: newListId(), name: 'Lista de compras', items: [] }];
+  }
+
+  // Se a lista aberta foi removida por outro, volta para os cards
+  if(viewListId && !state.shoppingLists.some(l => l.id === viewListId)){
+    viewListId = null;
+  }
+
   if(form.editing && !state.items.some(x => x.id === form.editing)) resetForm();
-  if(form.fromList && !state.shopping.some(x => x.id === form.fromList)) form.fromList = null;
+  if(form.fromList && !state.shoppingLists.some(l => l.items.some(x => x.id === form.fromList))) form.fromList = null;
 
-  // Corrige form.who se os índices agora estão fora de alcance
   form.who = form.who.filter(w => w < state.people.length);
 
   renderAll();
@@ -397,8 +452,8 @@ onSnapshot(DOC_REF, snapshot => {
   setSync('Sem conexão', 'err');
 });
 
-// ---------- Formulário ----------
-let form = { type: 'col', qty: 1, who: allIdx(), editing: null, fromList: null };
+// ---------- formulário (carrinho) ----------
+let form = { type: 'col', qty: 1, who: allIdx(), editing: null, fromList: null, fromListId: null };
 
 function renderChips(){
   let h = '';
@@ -431,7 +486,7 @@ function setType(t){
   renderChips(); renderPreview();
 }
 function resetForm(){
-  form.editing = null; form.fromList = null; form.qty = 1;
+  form.editing = null; form.fromList = null; form.fromListId = null; form.qty = 1;
   $('nome').value = ''; $('preco').value = ''; $('qtd').textContent = '1';
   $('form').classList.remove('editing');
   $('add').textContent = 'ADICIONAR ITEM';
@@ -480,9 +535,13 @@ function addItem(){
   }else{
     state.items.unshift(it);
     toast('Adicionado: ' + it.name);
+    // Marca como comprado em qualquer lista que tenha o mesmo nome ou o id vindo do "Lançar preço"
     const key = norm(it.name);
-    state.shopping.forEach(x => {
-      if(!x.done && (x.id === form.fromList || norm(x.name) === key)) x.done = true;
+    state.shoppingLists.forEach(l => {
+      l.items.forEach(x => {
+        if(x.done) return;
+        if((form.fromListId === l.id && x.id === form.fromList) || norm(x.name) === key) x.done = true;
+      });
     });
   }
 
@@ -494,7 +553,7 @@ function addItem(){
 $('add').onclick = addItem;
 $('cancel').onclick = resetForm;
 
-// ---------- Carrinho ----------
+// ---------- carrinho ----------
 function renderList(){
   const box = $('lista');
   $('count').textContent = state.items.length ? state.items.length + (state.items.length === 1 ? ' item' : ' itens') : '';
@@ -537,12 +596,12 @@ $('lista').onclick = e => {
     $('add').textContent = 'SALVAR ALTERAÇÃO';
     $('cancel').hidden = false;
     renderChips(); renderPreview();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-    $('nome').focus();
+    goTab('itens');
+    setTimeout(() => $('nome').focus(), 100);
   }
 };
 
-// ---------- Resumo ----------
+// ---------- resumo ----------
 function compute(){
   const res = state.people.map(() => ({ col: 0, ind: 0, lines: [] }));
   let total = 0;
@@ -595,12 +654,8 @@ $('copiar').onclick = () => {
   }catch(e){ fallback(); }
 };
 
-// ---------- Pessoas ----------
-// Guarda qual input está com foco para não recriar enquanto digita
-let focusedPersonIdx = -1;
-
+// ---------- pessoas ----------
 function renderPeople(){
-  // Se o usuário está editando um nome, não recria o container
   const active = document.activeElement;
   const isEditing = active && active.tagName === 'INPUT' && active.dataset.n !== undefined;
   if(isEditing) return;
@@ -611,13 +666,11 @@ function renderPeople(){
 }
 $('people').addEventListener('input', e => {
   const i = e.target.dataset.n; if(i === undefined) return;
-  // Não faz trim enquanto digita (senão espaços são cortados)
   state.people[+i] = e.target.value;
   saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
 });
 $('people').addEventListener('focusout', e => {
   const i = e.target.dataset.n; if(i === undefined) return;
-  // Aplica trim ao sair do campo
   const trimmed = e.target.value.trim();
   state.people[+i] = trimmed || ('Pessoa ' + (+i + 1));
   e.target.value = state.people[+i];
@@ -628,14 +681,11 @@ $('people').addEventListener('click', e => {
   if(state.people.length <= 2){ toast('Mínimo de 2 pessoas'); return; }
   const i = +b.dataset.rmp;
   state.people.splice(i, 1);
-  // Ajusta índices nos itens
   state.items = state.items.map(it => {
     it.who = it.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
     return it;
   }).filter(it => it.who.length);
-  // Ajusta índices na seleção atual do formulário
   form.who = form.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
-  // Se o item em edição ficou sem ninguém, cancela
   if(form.editing && form.who.length === 0 && form.type === 'ind') resetForm();
   saveToCloud(); renderAll(); renderPeople();
   toast('Pessoa removida');
@@ -644,7 +694,6 @@ $('add-pessoa').onclick = () => {
   if(state.people.length >= 20){ toast('Máximo de 20 pessoas'); return; }
   const newIdx = state.people.length;
   state.people.push('Pessoa ' + (newIdx + 1));
-  // Se o formulário está no modo coletivo, inclui a nova pessoa automaticamente
   if(form.type === 'col') form.who.push(newIdx);
   saveToCloud(); renderAll(); renderPeople();
   toast('Pessoa adicionada');
@@ -657,7 +706,7 @@ $('limpar').onclick = () => {
   state.items = []; saveToCloud(); armed = false; b.textContent = 'Limpar todos os itens'; renderAll(); toast('Carrinho limpo');
 };
 
-// ---------- Abas ----------
+// ---------- abas ----------
 function goTab(t){
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
@@ -668,36 +717,56 @@ document.querySelector('.tabs').onclick = e => {
   goTab(b.dataset.tab);
 };
 
-// ---------- Lista de compras ----------
-function addShopping(){
-  const inp = $('sh-nome');
-  const parts = inp.value.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
-  if(!parts.length){ inp.focus(); return; }
-  let added = 0;
-  parts.forEach(n => {
-    const k = norm(n);
-    const dup = state.shopping.some(x => !x.done && norm(x.name) === k);
-    if(dup) return;
-    state.shopping.push({ id: Date.now() + Math.random(), name: n.charAt(0).toUpperCase() + n.slice(1), done: false });
-    added++;
-  });
-  inp.value = ''; saveToCloud(); renderShopping(); inp.focus();
-  toast(added ? (added === 1 ? 'Adicionado à lista' : added + ' itens adicionados') : 'Já está na lista');
+// ---------- listas de compras ----------
+function showCardsView(){
+  viewListId = null;
+  $('list-detail').style.display = 'none';
+  $('lists-view').style.display = '';
+  renderShoppingCards();
 }
-$('sh-add').onclick = addShopping;
-$('sh-nome').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addShopping(); } });
-function shRow(x){
-  return '<div class="sh' + (x.done ? ' done' : '') + '"><button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
-    (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
-    '<button type="button" class="icon" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + ' da lista">🗑️</button></div>';
+function showListView(id){
+  viewListId = id;
+  $('lists-view').style.display = 'none';
+  $('list-detail').style.display = '';
+  renderShoppingDetail();
 }
-function renderShopping(){
-  const todo = state.shopping.filter(x => !x.done);
-  const done = state.shopping.filter(x => x.done);
-  const n = state.shopping.length;
+
+function renderShoppingCards(){
+  const box = $('lists-cards');
+  if(!state.shoppingLists.length){
+    box.innerHTML = '<div class="empty">Nenhuma lista ainda.<br>Crie uma abaixo.</div>';
+    return;
+  }
+  box.innerHTML = state.shoppingLists.map(l => {
+    const total = l.items.length;
+    const done = l.items.filter(x => x.done).length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const sub = total ? done + ' de ' + total + ' comprados' : 'Lista vazia';
+    return '<button type="button" class="list-card" data-list="' + l.id + '">' +
+      '<div class="lc-info">' +
+        '<div class="lc-title">' + esc(l.name) + '</div>' +
+        '<div class="lc-sub">' + sub + '</div>' +
+        '<div class="lc-bar"><i style="width:' + pct + '%"></i></div>' +
+      '</div>' +
+      '<span class="lc-chev">›</span>' +
+    '</button>';
+  }).join('');
+}
+
+function renderShoppingDetail(){
+  const l = currentList();
+  if(!l){ showCardsView(); return; }
+
+  const titleEl = $('list-title');
+  if(document.activeElement !== titleEl) titleEl.value = l.name;
+
+  const todo = l.items.filter(x => !x.done);
+  const done = l.items.filter(x => x.done);
+  const n = l.items.length;
   $('sh-count').textContent = n ? done.length + ' de ' + n + ' comprados' : 'Sua lista está vazia';
   $('sh-bar').style.width = n ? Math.round(done.length / n * 100) + '%' : '0';
   $('sh-clear').hidden = !done.length;
+
   let h = '';
   if(!n){
     h = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
@@ -707,36 +776,137 @@ function renderShopping(){
   }
   $('sh-list').innerHTML = h;
 }
+
+function shRow(x){
+  return '<div class="sh' + (x.done ? ' done' : '') + '"><button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
+    (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
+    '<button type="button" class="icon" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + ' da lista">🗑️</button></div>';
+}
+
+function renderShoppingArea(){
+  if(viewListId){
+    if(!state.shoppingLists.some(l => l.id === viewListId)){
+      // a lista foi removida
+      showCardsView();
+      return;
+    }
+    $('lists-view').style.display = 'none';
+    $('list-detail').style.display = '';
+    renderShoppingDetail();
+  }else{
+    $('list-detail').style.display = 'none';
+    $('lists-view').style.display = '';
+    renderShoppingCards();
+  }
+}
+
+// cards: abrir lista
+$('lists-cards').onclick = e => {
+  const b = e.target.closest('.list-card'); if(!b) return;
+  showListView(b.dataset.list);
+};
+
+// nova lista
+$('add-list').onclick = () => {
+  const base = 'Nova lista';
+  let finalName = base, i = 2;
+  while(state.shoppingLists.some(l => l.name === finalName)){ finalName = base + ' ' + i; i++; }
+  const id = newListId();
+  state.shoppingLists.push({ id, name: finalName, items: [] });
+  saveToCloud();
+  showListView(id);
+  setTimeout(() => { const el = $('list-title'); el.focus(); el.select(); }, 100);
+};
+
+// voltar
+$('back-lists').onclick = () => showCardsView();
+
+// editar título
+$('list-title').addEventListener('input', e => {
+  const l = currentList(); if(!l) return;
+  l.name = e.target.value;
+  saveToCloud();
+});
+$('list-title').addEventListener('focusout', e => {
+  const l = currentList(); if(!l) return;
+  const t = e.target.value.trim() || 'Lista sem nome';
+  l.name = t; e.target.value = t;
+  saveToCloud(); renderShoppingCards();
+});
+
+// excluir lista (duplo toque)
+let listArmed = null;
+$('del-list').onclick = () => {
+  if(!viewListId) return;
+  if(listArmed !== viewListId){
+    listArmed = viewListId;
+    toast('Toque de novo para excluir a lista');
+    setTimeout(() => { if(listArmed === viewListId) listArmed = null; }, 3000);
+    return;
+  }
+  state.shoppingLists = state.shoppingLists.filter(x => x.id !== viewListId);
+  listArmed = null;
+  viewListId = null;
+  saveToCloud(); renderAll();
+  toast('Lista excluída');
+};
+
+// adicionar itens à lista
+function addShopping(){
+  const l = currentList(); if(!l) return;
+  const inp = $('sh-nome');
+  const parts = inp.value.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+  if(!parts.length){ inp.focus(); return; }
+  let added = 0;
+  parts.forEach(n => {
+    const k = norm(n);
+    const dup = l.items.some(x => !x.done && norm(x.name) === k);
+    if(dup) return;
+    l.items.push({ id: Date.now() + Math.random(), name: n.charAt(0).toUpperCase() + n.slice(1), done: false });
+    added++;
+  });
+  inp.value = '';
+  saveToCloud(); renderShoppingArea(); inp.focus();
+  toast(added ? (added === 1 ? 'Adicionado à lista' : added + ' itens adicionados') : 'Já está na lista');
+}
+$('sh-add').onclick = addShopping;
+$('sh-nome').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addShopping(); } });
+
 $('sh-list').onclick = e => {
+  const l = currentList(); if(!l) return;
   const t = e.target.closest('[data-tog]'), p = e.target.closest('[data-price]'), d = e.target.closest('[data-shdel]');
-  function find(id){ return state.shopping.filter(x => String(x.id) === id)[0]; }
+  function find(id){ return l.items.filter(x => String(x.id) === id)[0]; }
   if(t){
     const x = find(t.dataset.tog);
-    if(x){ x.done = !x.done; saveToCloud(); renderShopping(); }
+    if(x){ x.done = !x.done; saveToCloud(); renderShoppingArea(); }
   }else if(d){
-    state.shopping = state.shopping.filter(x => String(x.id) !== d.dataset.shdel);
-    saveToCloud(); renderShopping();
+    l.items = l.items.filter(x => String(x.id) !== d.dataset.shdel);
+    saveToCloud(); renderShoppingArea();
   }else if(p){
     const it = find(p.dataset.price); if(!it) return;
     if(form.editing) resetForm();
     form.fromList = it.id;
-    $('nome').value = it.name; $('preco').value = '';
-    goTab('itens'); $('preco').focus();
+    form.fromListId = l.id;
+    $('nome').value = it.name;
+    $('preco').value = '';
+    goTab('itens');
+    setTimeout(() => $('preco').focus(), 100);
   }
 };
 $('sh-clear').onclick = () => {
-  state.shopping = state.shopping.filter(x => !x.done);
-  saveToCloud(); renderShopping();
+  const l = currentList(); if(!l) return;
+  l.items = l.items.filter(x => !x.done);
+  saveToCloud(); renderShoppingArea();
 };
 
-// ---------- Render geral ----------
+// ---------- render geral ----------
 function renderAll(){
   renderList();
   renderSummary();
   renderChips();
   renderPreview();
-  renderShopping();
-  renderPeople(); // ⬅️ ESSA LINHA ERA A QUE FALTAVA
+  renderShoppingArea();
+  renderPeople();
 }
 
 renderPeople();
