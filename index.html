@@ -43,7 +43,6 @@ button{cursor:pointer;border:0;background:none}
 
 .app{max-width:560px;margin:0 auto;padding-bottom:150px}
 
-/* topo */
 .top{background:var(--yellow);color:var(--on-yellow);padding:14px 16px 12px;border-bottom:4px solid var(--on-yellow)}
 .top h1{margin:0;font-family:var(--head);font-weight:800;font-size:30px;line-height:1;letter-spacing:.2px}
 .top p{margin:4px 0 0;font-size:14px;font-weight:500;opacity:.85}
@@ -51,7 +50,6 @@ button{cursor:pointer;border:0;background:none}
 .panel{display:none;padding:14px 14px 0}
 .panel.on{display:block}
 
-/* formulário */
 .form{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:14px}
 .form.editing{border-color:var(--coletivo);box-shadow:0 0 0 3px var(--coletivo-bg)}
 .row{display:flex;gap:10px}
@@ -96,7 +94,6 @@ button{cursor:pointer;border:0;background:none}
 .add:active{transform:scale(.99)}
 .cancel{width:100%;height:44px;margin-top:6px;color:var(--muted);font-weight:600}
 
-/* lista */
 .list-head{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 8px}
 .list-head h2{margin:0;font-family:var(--head);font-size:22px;font-weight:700}
 .list-head span{color:var(--muted);font-size:14px;font-weight:500}
@@ -114,7 +111,6 @@ button{cursor:pointer;border:0;background:none}
 .icon{width:38px;height:34px;border-radius:8px;font-size:17px}
 .icon:active{background:var(--bg)}
 
-/* resumo */
 .card{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
 .card summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;min-height:64px}
 .card summary::-webkit-details-marker{display:none}
@@ -138,12 +134,10 @@ button{cursor:pointer;border:0;background:none}
 .btn.ghost{border:2px solid var(--line);background:var(--surface)}
 .btn.danger{border:2px solid var(--danger);color:var(--danger);background:var(--surface)}
 
-/* pessoas */
 .people .p{display:flex;gap:10px;align-items:center;margin-bottom:10px}
 .people .p i{flex:0 0 36px;height:36px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);display:grid;place-items:center;font-style:normal;font-family:var(--head);font-weight:800;font-size:20px}
 .hint{color:var(--muted);font-size:14px;margin:0 2px 14px}
 
-/* lista de compras */
 .addrow{display:flex;gap:8px}
 .addrow .input{flex:1}
 .addrow button{flex:0 0 auto;width:56px;height:52px;border-radius:10px;background:var(--ink);color:var(--surface);font-family:var(--head);font-size:28px;font-weight:800}
@@ -161,7 +155,6 @@ button{cursor:pointer;border:0;background:none}
 .sub-h{margin:18px 2px 8px;font-family:var(--head);font-size:20px;font-weight:700}
 .tabs button{font-size:13px}
 
-/* barra inferior */
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
 .dock .in{max-width:560px;margin:0 auto}
 .totalbar{display:flex;justify-content:space-between;align-items:baseline;padding:8px 16px 0}
@@ -190,7 +183,6 @@ button{cursor:pointer;border:0;background:none}
 
   <div class="sync" id="sync">Conectando…</div>
 
-  <!-- LISTA -->
   <section class="panel on" id="p-lista" role="tabpanel">
     <div class="addrow">
       <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
@@ -202,7 +194,6 @@ button{cursor:pointer;border:0;background:none}
     <div id="sh-list"></div>
   </section>
 
-  <!-- ITENS -->
   <section class="panel" id="p-itens" role="tabpanel">
     <div class="form" id="form">
       <div class="field">
@@ -245,14 +236,12 @@ button{cursor:pointer;border:0;background:none}
     <div id="lista"></div>
   </section>
 
-  <!-- RESUMO -->
   <section class="panel" id="p-resumo" role="tabpanel">
     <div class="grand"><div class="l">Total do carrinho<small id="g-sub"></small></div><div class="v" id="g-total">R$ 0,00</div></div>
     <div id="cards"></div>
     <button class="btn primary" id="copiar">Copiar resumo para o WhatsApp</button>
   </section>
 
-  <!-- PESSOAS -->
   <section class="panel" id="p-pessoas" role="tabpanel">
     <p class="hint">Toque no nome para editar. Máximo de 20 pessoas.</p>
     <div class="people" id="people"></div>
@@ -275,33 +264,34 @@ button{cursor:pointer;border:0;background:none}
   </div>
 </nav>
 
-<!-- Firebase SDK (modular, via CDN) -->
 <script type="module">
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
-// ⚠️ COLE AQUI o objeto que o Firebase te deu:
+// ⚠️ COLE AQUI o seu firebaseConfig (o que o Firebase te deu)
 const firebaseConfig = {
-  apiKey: "AIzaSyA1RF4LWskFdSEIXhm40PBxkkIv_ihBlLc",
-  authDomain: "conedu2026-6a712.firebaseapp.com",
-  projectId: "conedu2026-6a712",
-  storageBucket: "conedu2026-6a712.firebasestorage.app",
-  messagingSenderId: "55965192438",
-  appId: "1:55965192438:web:14c1b7026d16ee4ed09cd7"
+  apiKey: "COLE_AQUI",
+  authDomain: "COLE_AQUI",
+  projectId: "COLE_AQUI",
+  storageBucket: "COLE_AQUI",
+  messagingSenderId: "COLE_AQUI",
+  appId: "COLE_AQUI"
 };
 
 const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
-
-// Documento único onde tudo é salvo
 const DOC_REF = doc(db, 'conedu2026', 'estado');
 
 // ---------- Estado local ----------
 const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
 let state = { people: defaultNames.slice(), items: [], shopping: [] };
 
-// Flag: quando true, a próxima mudança veio do Firestore e NÃO deve ser reenviada
-let applyingRemote = false;
+// Identificador único deste cliente (uma aba = um cliente)
+const clientId = Math.random().toString(36).slice(2) + Date.now();
+
+// Flags de sincronização
+let applyingRemote = false;   // estamos aplicando um snapshot remoto
+let pendingWrite = false;     // temos alterações locais não salvas ainda
 let saveTimeout = null;
 
 const $ = id => document.getElementById(id);
@@ -327,7 +317,6 @@ function split(total, idx){
 }
 function itemTotal(it){ return it.price * it.qty; }
 
-// ---------- Toast e status de sync ----------
 function toast(msg){
   const t = $('toast');
   t.textContent = msg;
@@ -345,48 +334,60 @@ function setSync(txt, cls){
 
 // ---------- Salvar no Firestore ----------
 function saveToCloud(){
-  if(applyingRemote) return; // se veio do servidor, não reenvia
+  if(applyingRemote) return;
+  pendingWrite = true;
   clearTimeout(saveTimeout);
   saveTimeout = setTimeout(async () => {
     setSync('Salvando…');
+    const payload = {
+      people: state.people.slice(),
+      items: JSON.parse(JSON.stringify(state.items)),
+      shopping: JSON.parse(JSON.stringify(state.shopping)),
+      updatedAt: Date.now(),
+      lastWriter: clientId
+    };
     try{
-      await setDoc(DOC_REF, {
-        people: state.people,
-        items: state.items,
-        shopping: state.shopping,
-        updatedAt: Date.now()
-      });
+      await setDoc(DOC_REF, payload);
       setSync('Sincronizado ✓', 'ok');
     }catch(e){
       console.error('Erro ao salvar:', e);
       setSync('Erro ao salvar', 'err');
+    }finally{
+      pendingWrite = false;
+      saveTimeout = null;
     }
-  }, 250); // espera 250ms para agrupar mudanças rápidas
+  }, 150);
 }
 
-// ---------- Ouvir mudanças do Firestore (tempo real) ----------
+// ---------- Ouvir mudanças do Firestore ----------
 onSnapshot(DOC_REF, snapshot => {
   if(!snapshot.exists()){
-    // Primeira vez: cria o documento com os dados padrão
-    setDoc(DOC_REF, { people: state.people, items: [], shopping: [], updatedAt: Date.now() });
+    setDoc(DOC_REF, {
+      people: state.people, items: [], shopping: [],
+      updatedAt: Date.now(), lastWriter: clientId
+    });
     return;
   }
   const data = snapshot.data();
   if(!data || !data.people) return;
 
-  applyingRemote = true;
-  state.people = data.people || defaultNames.slice();
-  state.items = data.items || [];
-  state.shopping = data.shopping || [];
+  // Ignora o eco da nossa própria escrita
+  if(data.lastWriter === clientId) return;
 
-  // Se a pessoa está editando um item que foi removido por outro, cancela a edição
-  if(form.editing && !state.items.some(x => x.id === form.editing)){
-    resetForm();
-  }
-  // Se a pessoa está lançando preço de algo que foi removido, cancela
-  if(form.fromList && !state.shopping.some(x => x.id === form.fromList)){
-    form.fromList = null;
-  }
+  // Se temos alterações locais ainda não salvas, não sobrescreve
+  if(pendingWrite) return;
+
+  applyingRemote = true;
+  state.people = data.people.slice();
+  state.items = data.items ? JSON.parse(JSON.stringify(data.items)) : [];
+  state.shopping = data.shopping ? JSON.parse(JSON.stringify(data.shopping)) : [];
+
+  // Se a pessoa estava editando algo que sumiu, cancela a edição
+  if(form.editing && !state.items.some(x => x.id === form.editing)) resetForm();
+  if(form.fromList && !state.shopping.some(x => x.id === form.fromList)) form.fromList = null;
+
+  // Corrige form.who se os índices agora estão fora de alcance
+  form.who = form.who.filter(w => w < state.people.length);
 
   renderAll();
   applyingRemote = false;
@@ -438,7 +439,6 @@ function resetForm(){
   setType(form.type);
 }
 
-// Eventos do formulário
 $('t-col').onclick = () => setType('col');
 $('t-ind').onclick = () => setType('ind');
 $('chips').onclick = e => {
@@ -494,7 +494,7 @@ function addItem(){
 $('add').onclick = addItem;
 $('cancel').onclick = resetForm;
 
-// ---------- Lista (carrinho) ----------
+// ---------- Carrinho ----------
 function renderList(){
   const box = $('lista');
   $('count').textContent = state.items.length ? state.items.length + (state.items.length === 1 ? ' item' : ' itens') : '';
@@ -596,14 +596,31 @@ $('copiar').onclick = () => {
 };
 
 // ---------- Pessoas ----------
+// Guarda qual input está com foco para não recriar enquanto digita
+let focusedPersonIdx = -1;
+
 function renderPeople(){
+  // Se o usuário está editando um nome, não recria o container
+  const active = document.activeElement;
+  const isEditing = active && active.tagName === 'INPUT' && active.dataset.n !== undefined;
+  if(isEditing) return;
+
   $('people').innerHTML = state.people.map((n, i) =>
     '<div class="p"><i>' + (i + 1) + '</i><input class="input" data-n="' + i + '" value="' + esc(n) + '" maxlength="20" aria-label="Nome da pessoa ' + (i + 1) + '"><button class="icon" data-rmp="' + i + '" aria-label="Remover ' + esc(n) + '" style="flex:0 0 auto;width:44px;height:44px;font-size:20px">✕</button></div>'
   ).join('');
 }
 $('people').addEventListener('input', e => {
   const i = e.target.dataset.n; if(i === undefined) return;
-  state.people[+i] = e.target.value.trim() || defaultNames[+i] || 'Pessoa';
+  // Não faz trim enquanto digita (senão espaços são cortados)
+  state.people[+i] = e.target.value;
+  saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
+});
+$('people').addEventListener('focusout', e => {
+  const i = e.target.dataset.n; if(i === undefined) return;
+  // Aplica trim ao sair do campo
+  const trimmed = e.target.value.trim();
+  state.people[+i] = trimmed || ('Pessoa ' + (+i + 1));
+  e.target.value = state.people[+i];
   saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
 });
 $('people').addEventListener('click', e => {
@@ -611,21 +628,28 @@ $('people').addEventListener('click', e => {
   if(state.people.length <= 2){ toast('Mínimo de 2 pessoas'); return; }
   const i = +b.dataset.rmp;
   state.people.splice(i, 1);
-  // Ajusta os índices nos itens
+  // Ajusta índices nos itens
   state.items = state.items.map(it => {
     it.who = it.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
     return it;
   }).filter(it => it.who.length);
-  // Ajusta índices na lista de compras (não tem índice de pessoa, então nada a fazer)
+  // Ajusta índices na seleção atual do formulário
+  form.who = form.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
+  // Se o item em edição ficou sem ninguém, cancela
+  if(form.editing && form.who.length === 0 && form.type === 'ind') resetForm();
   saveToCloud(); renderAll(); renderPeople();
   toast('Pessoa removida');
 });
 $('add-pessoa').onclick = () => {
   if(state.people.length >= 20){ toast('Máximo de 20 pessoas'); return; }
-  state.people.push('Pessoa ' + (state.people.length + 1));
+  const newIdx = state.people.length;
+  state.people.push('Pessoa ' + (newIdx + 1));
+  // Se o formulário está no modo coletivo, inclui a nova pessoa automaticamente
+  if(form.type === 'col') form.who.push(newIdx);
   saveToCloud(); renderAll(); renderPeople();
   toast('Pessoa adicionada');
 };
+
 let armed = false;
 $('limpar').onclick = () => {
   const b = $('limpar');
@@ -707,14 +731,16 @@ $('sh-clear').onclick = () => {
 
 // ---------- Render geral ----------
 function renderAll(){
-  renderList(); renderSummary(); renderChips(); renderPreview(); renderShopping();
+  renderList();
+  renderSummary();
+  renderChips();
+  renderPreview();
+  renderShopping();
+  renderPeople(); // ⬅️ ESSA LINHA ERA A QUE FALTAVA
 }
 
-// Inicialização
 renderPeople();
 renderAll();
-
-// Se o Firestore demorar, mostra os dados locais; quando chegar, o listener sobrescreve
 setSync('Conectando…');
 </script>
 </body>
