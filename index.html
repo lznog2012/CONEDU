@@ -147,19 +147,14 @@ button{cursor:pointer;border:0;background:none}
 .addrow{display:flex;gap:8px}
 .addrow .input{flex:1}
 .addrow button{flex:0 0 auto;width:56px;height:52px;border-radius:10px;background:var(--ink);color:var(--surface);font-family:var(--head);font-size:28px;font-weight:800}
-
-/* Seletor de categoria do "adicionar" */
 .cat-picker{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
 .cat-picker::-webkit-scrollbar{display:none}
 .cat-chip{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
 .cat-chip.on{border-color:var(--coletivo);background:var(--coletivo-bg);color:var(--coletivo)}
 .cat-chip.auto{font-style:italic}
-
 .progress{margin:14px 2px 6px;font-weight:600;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;align-items:center}
 .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0 2px 12px}
 .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
-
-/* ITEM DA LISTA */
 .sh{display:flex;align-items:flex-start;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding:6px 6px 6px 0}
 .sh-main{flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 4px 6px 12px;gap:2px;align-items:flex-start}
 .sh .tog{display:flex;align-items:center;gap:12px;text-align:left;font-size:18px;font-weight:600;padding:0;background:none;min-height:32px;color:inherit;width:100%}
@@ -174,7 +169,6 @@ button{cursor:pointer;border:0;background:none}
 .sh-cat:active{color:var(--coletivo)}
 .sh-cat .cat-em{font-size:13px;margin-right:3px}
 .sh.done .sh-cat{opacity:.6}
-
 .cat-head{display:flex;align-items:center;gap:10px;margin:20px 2px 8px}
 .cat-head:first-child{margin-top:6px}
 .cat-head .cat-em{font-size:24px;line-height:1}
@@ -196,8 +190,6 @@ button{cursor:pointer;border:0;background:none}
 .sync.on{opacity:1}
 .sync.ok{border-color:var(--ok);color:var(--ok)}
 .sync.err{border-color:var(--danger);color:var(--danger)}
-
-/* BOTTOM SHEET */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .sheet.on{opacity:1;pointer-events:auto}
 .sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(30px);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.15);max-height:85vh;overflow-y:auto}
@@ -215,7 +207,6 @@ button{cursor:pointer;border:0;background:none}
 .sheet-actions button{padding:12px 16px;border-radius:12px;border:2px dashed var(--line);background:transparent;font-weight:600;color:var(--muted);font-size:15px;flex:1;min-height:52px}
 .sheet-actions button:active{background:var(--bg)}
 .sheet-actions button.add-new{color:var(--coletivo);border-color:var(--coletivo)}
-
 .newcat-form{margin-top:14px;padding:14px;background:var(--bg);border-radius:12px;display:none}
 .newcat-form.on{display:block}
 .newcat-row{display:flex;gap:8px;margin-bottom:8px}
@@ -370,21 +361,85 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const DOC_REF = doc(db, 'conedu2026', 'estado');
 
-// ---------- CATEGORIAS PADRÃO ----------
+// ============================================================
+// CATEGORIAS PADRÃO (ordem = ordem de exibição na lista)
+// ============================================================
 const DEFAULT_CATEGORIES = [
-  { id: 'alimento', name: 'Alimentação', emoji: '🍚', builtin: true },
-  { id: 'bebida',   name: 'Bebidas',     emoji: '🥤', builtin: true },
-  { id: 'higiene',  name: 'Higiene',     emoji: '🧴', builtin: true },
-  { id: 'limpeza',  name: 'Limpeza',     emoji: '🧽', builtin: true },
-  { id: 'outros',   name: 'Outros',      emoji: '📦', builtin: true }
+  { id: 'hortifruti', name: 'Hortifruti',     emoji: '🥬', builtin: true },
+  { id: 'carnes',     name: 'Carnes e frios', emoji: '🥩', builtin: true },
+  { id: 'laticinios', name: 'Laticínios',     emoji: '🥛', builtin: true },
+  { id: 'padaria',    name: 'Padaria',        emoji: '🍞', builtin: true },
+  { id: 'mercearia',  name: 'Mercearia',      emoji: '🥫', builtin: true },
+  { id: 'doces',      name: 'Doces e snacks', emoji: '🍫', builtin: true },
+  { id: 'bebida',     name: 'Bebidas',        emoji: '🥤', builtin: true },
+  { id: 'higiene',    name: 'Higiene',        emoji: '🧴', builtin: true },
+  { id: 'limpeza',    name: 'Limpeza',        emoji: '🧽', builtin: true },
+  { id: 'outros',     name: 'Outros',         emoji: '📦', builtin: true }
 ];
 
+// Palavras-chave por categoria (comparação sem acento e minúscula)
 const KEYWORDS = {
-  alimento: ['arroz','feijao','feijão','macarrao','macarrão','carne','frango','peixe','pao','pão','leite','queijo','ovo','ovos','acucar','açúcar','sal','oleo','óleo','azeite','cafe','café','bolacha','biscoito','biscoitos','chocolate','manteiga','margarina','farinha','trigo','molho','extrato','atum','sardinha','iogurte','requeijao','requeijão','presunto','mortadela','linguica','linguiça','salsicha','bacon','verdura','legume','fruta','banana','maca','maçã','laranja','tomate','cebola','alho','batata','cenoura','alface','cereal','granola','aveia','mel','gelatina','sobremesa','bolo','torta','hamburguer','hambúrguer','nuggets','pizza'],
-  bebida: ['agua','água','suco','refrigerante','refri','coca','coca-cola','guarana','guaraná','pepsi','cerveja','vinho','vodka','whisky','energetico','energético','cha','chá','isotonico','isotônico','gatorade','schweppes','tonica','tônica'],
-  higiene: ['sabonete','shampoo','condicionador','creme dental','pasta de dente','escova de dente','desodorante','papel higienico','papel higiênico','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme','pomada','fio dental','enxaguante','escova'],
-  limpeza: ['detergente','sabao em po','sabão em pó','sabao','sabão','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano de chao','pano de chão','saco de lixo','alvejante','limpa vidro','cloro','desengordurante','sabao liquido','sabão líquido']
+  padaria: [
+    'pao de queijo','pão de queijo','pao de forma','pão de forma','pao frances','pão francês','pao australiano','pao integral','pão integral','pao','pão',
+    'baguete','croissant','bolo','torta','sonho','rosca','bisnaguinha','broa','ciabatta','bagel','pretzel','bolinho','pao doce','pão doce'
+  ],
+  laticinios: [
+    'leite condensado','leite em po','leite em pó','leite ninho','creme de leite','leite fermentado','leite',
+    'queijo','iogurte','manteiga','margarina','requeijao','requeijão','cream cheese','nata','cottage','ricota',
+    'parmesao','parmesão','mussarela','muçarela','provolone','gorgonzola','brie','camembert','coalhada','kefir',
+    'petit suisse','danone','yakult','chantilly'
+  ],
+  carnes: [
+    'carne moida','carne moída','carne de porco','carne de boi','carne seca','carne','bovina','patinho','alcatra','picanha',
+    'contrafile','contrafilé','file','filé','frango','peixe','tilapia','tilápia','salmao','salmão','merluza','pescada',
+    'porco','lombo','costela','linguica','linguiça','salsicha','bacon','presunto','mortadela','salame','peito de peru',
+    'blanquet','chester','hamburguer','hambúrguer','nuggets','strogonoff','kibe','espetinho'
+  ],
+  hortifruti: [
+    'banana','maca','maçã','laranja','limao','limão','uva','mamao','mamão','melancia','melao','melão','morango','abacaxi',
+    'manga','kiwi','pera','goiaba','tangerina','mexerica','ameixa','pessego','pêssego','caju','acerola','maracuja','maracujá',
+    'verdura','legume','alface','rucula','rúcula','couve','espinafre','tomate','cebola','alho','batata doce','batata',
+    'cenoura','beterraba','abobrinha','chuchu','pepino','pimentao','pimentão','brocolis','brócolis','couve-flor','repolho',
+    'quiabo','vagem','mandioca','inhame','abobora','abóbora','ovo','ovos','salsa','cebolinha','coentro','tempero verde',
+    'rucula','agriao','agrião','milho verde'
+  ],
+  doces: [
+    'bolacha','biscoito','biscoitos','chocolate','bala','chiclete','pirulito','gelatina','pudim','sobremesa','sorvete',
+    'acai','açaí','doce de leite','goiabada','nutella','creme de avela','creme de avelã','wafer','waffer','salgadinho',
+    'amendoim','castanha','pipoca','batata chips','batata palha','pacoca','paçoca','pe de moleque','pé de moleque',
+    'maria mole','brigadeiro','bombom','marshmallow','mousse','bolo recheado','brownie','cookie','cookies'
+  ],
+  mercearia: [
+    'arroz','feijao','feijão','macarrao','macarrão','espaguete','penne','parafuso','lasanha','nhoque','lentilha',
+    'grao de bico','grão de bico','aveia','farinha','trigo','fuba','fubá','milho','ervilha','atum','sardinha',
+    'extrato de tomate','molho de tomate','molho','azeite','oleo','óleo','vinagre','sal','acucar','açúcar',
+    'cafe','café','cha','chá','achocolatado','ketchup','mostarda','maionese','oregano','orégano','pimenta','canela',
+    'tempero','caldo','azeitona','picles','seleta','cereal','granola','mel','polvilho','amido','leite em po',
+    'leite ninho','creme de leite','gelatina em po','sopa','macarrao instantaneo','macarrão instantâneo','miojo'
+  ],
+  bebida: [
+    'agua','água','suco','refrigerante','refri','coca','coca-cola','guarana','guaraná','pepsi','fanta','sprite',
+    'cerveja','vinho','vodka','whisky','energetico','energético','isotonico','isotônico','gatorade','schweppes',
+    'tonica','tônica','espumante','champagne','prosecco','licor','gin','rum','tequila','sake','cidra','mate',
+    'cha gelado','cha mate','cha pronto','suco de caixinha'
+  ],
+  higiene: [
+    'papel higienico','papel higiênico','sabonete','shampoo','condicionador','creme dental','pasta de dente',
+    'escova de dente','desodorante','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço',
+    'perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme de barbear','creme','pomada',
+    'fio dental','enxaguante','sabonete facial','sabonete liquido','cotonete','escova','aparelho de barbear'
+  ],
+  limpeza: [
+    'sabao em po','sabão em pó','sabao liquido','sabão líquido','sabao de coco','sabao','sabão',
+    'detergente','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso',
+    'veja','esponja','bucha','vassoura','rodo','pano de chao','pano de chão','saco de lixo','alvejante',
+    'limpa vidro','cloro','desengordurante','sapolio','bombril','lustra moveis','lustra móveis','sabao em barra','sabao de pedra'
+  ]
 };
+
+// Ordem em que as categorias são verificadas (mais específico → menos específico)
+// Isso evita falsos positivos como "sal" batendo em "salame"
+const DETECT_ORDER = ['padaria','higiene','laticinios','carnes','hortifruti','doces','mercearia','bebida','limpeza'];
 
 function norm(s){ return String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
@@ -398,6 +453,14 @@ function parsePrice(v){
   return isNaN(n) ? 0 : Math.round(n * 100);
 }
 function uid(prefix){ return (prefix||'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+function detectCategory(name){
+  const n = norm(name);
+  for(const cat of DETECT_ORDER){
+    if(KEYWORDS[cat] && KEYWORDS[cat].some(k => n.includes(norm(k)))) return cat;
+  }
+  return 'outros';
+}
 
 // ---------- ESTADO ----------
 const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
@@ -413,7 +476,7 @@ const clientId = Math.random().toString(36).slice(2) + Date.now();
 let applyingRemote = false;
 let saveTimeout = null;
 let viewListId = null;
-let forcedCategory = null;   // null = automático; id = força categoria
+let forcedCategory = null;
 
 const $ = id => document.getElementById(id);
 
@@ -424,14 +487,6 @@ function getCategory(id){
   const list = allCategories();
   return list.find(c => c.id === id) || list.find(c => c.id === 'outros') || list[list.length-1];
 }
-function detectCategory(name){
-  const n = norm(name);
-  for(const cat of ['alimento','bebida','higiene','limpeza']){
-    if(KEYWORDS[cat].some(k => n.includes(norm(k)))) return cat;
-  }
-  return 'outros';
-}
-
 function allIdx(){ return state.people.map((_, i) => i); }
 function split(total, idx){
   const n = idx.length, base = Math.floor(total / n), rem = total - base * n;
@@ -458,9 +513,14 @@ function setSync(txt, cls){
 }
 
 function ensureCategories(){
+  const validIds = new Set(allCategories().map(c => c.id));
   state.shoppingLists.forEach(l => {
     l.items.forEach(it => {
-      if(!it.category) it.category = detectCategory(it.name);
+      // Se não tem categoria OU se a categoria não existe mais (ex: "alimento" antigo),
+      // reatribui pela detecção automática
+      if(!it.category || !validIds.has(it.category)){
+        it.category = detectCategory(it.name);
+      }
     });
   });
 }
@@ -864,7 +924,6 @@ function renderShoppingDetail(){
   $('sh-bar').style.width = total ? Math.round(doneCount / total * 100) + '%' : '0';
   $('sh-clear').hidden = !doneCount;
 
-  // Picker de categoria (para o "adicionar")
   renderCatPicker();
 
   if(!total){
@@ -875,7 +934,6 @@ function renderShoppingDetail(){
   const pending = l.items.filter(x => !x.done);
   const done = l.items.filter(x => x.done);
 
-  // Agrupa pendentes por TODAS as categorias (inclusive customizadas)
   const allCats = allCategories();
   const groups = {};
   allCats.forEach(c => groups[c.id] = []);
@@ -887,7 +945,6 @@ function renderShoppingDetail(){
 
   let h = '';
   let anyPending = false;
-  // Ordena: categorias default primeiro, customizadas no fim, e só mostra se tem itens
   allCats.forEach(cat => {
     const list = groups[cat.id];
     if(!list || !list.length) return;
@@ -1089,7 +1146,6 @@ $('cat-sheet').addEventListener('click', e => {
   if(e.target === $('cat-sheet')) closeCatSheet();
 });
 
-// Nova categoria
 $('cat-new-btn').onclick = () => {
   const f = $('newcat-form');
   f.classList.toggle('on');
@@ -1103,7 +1159,6 @@ $('newcat-save').onclick = () => {
   const name = $('newcat-name').value.trim();
   if(!name){ toast('Dê um nome para a categoria'); $('newcat-name').focus(); return; }
 
-  // Evita duplicar nome com existente
   const existing = allCategories().find(c => norm(c.name) === norm(name));
   let catId;
   if(existing){
@@ -1113,7 +1168,6 @@ $('newcat-save').onclick = () => {
     state.customCategories.push({ id: catId, name, emoji });
   }
 
-  // Aplica ao item que estava sendo editado
   const l = currentList();
   if(l && sheetItemId){
     const it = l.items.find(x => String(x.id) === String(sheetItemId));
@@ -1126,7 +1180,7 @@ $('newcat-save').onclick = () => {
   toast('Categoria "' + name + '" criada');
 };
 
-// Long press no nome para abrir também (atalho)
+// Long press (mobile) e right-click (desktop) também abrem o seletor
 let pressTimer = null;
 let pressTarget = null;
 $('sh-list').addEventListener('touchstart', e => {
