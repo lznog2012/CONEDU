@@ -150,19 +150,24 @@ button{cursor:pointer;border:0;background:none}
 .progress{margin:14px 2px 6px;font-weight:600;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;align-items:center}
 .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0 2px 12px}
 .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+
+/* === ITEM DA LISTA === */
 .sh{display:flex;align-items:center;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding-right:6px}
-.sh .tog{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:56px;padding:0 6px 0 6px;text-align:left;font-size:18px;font-weight:600}
+.sh-info{flex:1;min-width:0;display:flex;flex-direction:column;padding:8px 4px 8px 12px;justify-content:center;gap:2px}
+.sh .tog{display:flex;align-items:center;gap:12px;text-align:left;font-size:18px;font-weight:600;padding:0;background:none;min-height:32px;color:inherit}
 .sh .box{flex:0 0 28px;height:28px;border-radius:8px;border:2.5px solid var(--ink);display:grid;place-items:center;font-size:18px;line-height:1;color:transparent}
 .sh .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .sh.done{background:transparent}
 .sh.done .nm{text-decoration:line-through;color:var(--muted);font-weight:500}
 .sh.done .box{background:var(--ok);border-color:var(--ok);color:#fff}
 .sh .price{flex:0 0 auto;height:40px;padding:0 10px;border-radius:8px;background:var(--yellow);color:var(--on-yellow);font-weight:700;font-size:14px;border:2px solid var(--on-yellow)}
-.sh .cat-btn{flex:0 0 auto;width:42px;height:42px;border-radius:50%;border:2px solid var(--line);background:var(--bg);font-size:20px;margin-left:6px;display:grid;place-items:center;line-height:1;padding:0}
-.sh .cat-btn:active{transform:scale(.94);background:var(--line)}
-.sh.done .cat-btn{opacity:.55}
-.cat-head{display:flex;align-items:center;gap:8px;margin:18px 2px 8px;font-family:var(--head);font-size:19px;font-weight:700;color:var(--ink)}
+.sh-hint{font-size:12px;color:var(--individual);text-align:left;font-weight:700;padding:0 0 0 40px;text-decoration:underline;text-underline-offset:2px;align-self:flex-start;background:none;border:none;cursor:pointer;line-height:1.3;margin-top:1px}
+.sh-hint:active{opacity:.7}
+
+.cat-head{display:flex;align-items:center;gap:8px;margin:18px 2px 8px}
 .cat-head:first-child{margin-top:6px}
+.cat-head .cat-em{font-size:24px;line-height:1}
+.cat-head .cat-name{font-family:var(--head);font-size:20px;font-weight:800;color:var(--ink)}
 .cat-head .cat-count{margin-left:auto;font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted);background:var(--line);padding:2px 9px;border-radius:999px}
 .sub-h{margin:18px 2px 8px;font-family:var(--head);font-size:20px;font-weight:700}
 .dock{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -180,6 +185,20 @@ button{cursor:pointer;border:0;background:none}
 .sync.on{opacity:1}
 .sync.ok{border-color:var(--ok);color:var(--ok)}
 .sync.err{border-color:var(--danger);color:var(--danger)}
+
+/* === SHEET (seletor de categoria) === */
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet.on{opacity:1;pointer-events:auto}
+.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(16px + env(safe-area-inset-bottom,0px));transform:translateY(30px);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.15)}
+.sheet.on .sheet-in{transform:translateY(0)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sheet-head b{font-family:var(--head);font-size:22px;font-weight:800}
+.sheet-head button{width:40px;height:40px;border-radius:10px;font-size:18px;background:var(--bg);color:var(--ink);display:grid;place-items:center}
+.cat-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cat-option{padding:14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-weight:600;font-size:16px;display:flex;align-items:center;gap:10px;text-align:left;min-height:56px}
+.cat-option:active{background:var(--line)}
+.cat-option.on{background:var(--coletivo-bg);border-color:var(--coletivo);color:var(--coletivo)}
+.cat-option .em{font-size:22px;line-height:1}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -209,7 +228,7 @@ button{cursor:pointer;border:0;background:none}
         <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
         <button type="button" id="sh-add" aria-label="Adicionar à lista">+</button>
       </div>
-      <p class="hint" style="margin:8px 2px 0">Dica: escreva vários separados por vírgula (arroz, feijão, café). A categoria é detectada automaticamente.</p>
+      <p class="hint" style="margin:8px 2px 0">Dica: escreva vários separados por vírgula (arroz, feijão, café).</p>
       <div class="progress"><span id="sh-count"></span><button type="button" class="link" id="sh-clear" hidden>Limpar comprados</button></div>
       <div class="bar"><i id="sh-bar"></i></div>
       <div id="sh-list"></div>
@@ -270,6 +289,17 @@ button{cursor:pointer;border:0;background:none}
 
 <div class="toast" id="toast"></div>
 
+<!-- Seletor de categoria (bottom sheet) -->
+<div class="sheet" id="cat-sheet" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <b>Escolher categoria</b>
+      <button type="button" id="cat-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="cat-options" id="cat-options"></div>
+  </div>
+</div>
+
 <nav class="dock" aria-label="Navegação">
   <div class="in">
     <div class="totalbar"><span>Total</span><b id="dock-total">R$ 0,00</b></div>
@@ -286,7 +316,6 @@ button{cursor:pointer;border:0;background:none}
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
 import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
 
-// ✅ Firebase config já preenchido
 const firebaseConfig = {
   apiKey: "AIzaSyA1RF4LWskFdSEIXhm40PBxkkIv_ihBlLc",
   authDomain: "conedu2026-6a712.firebaseapp.com",
@@ -312,10 +341,10 @@ const CATEGORIES = [
 ];
 
 const KEYWORDS = {
-  alimento: ['arroz','feijao','feijão','macarrao','macarrão','carne','frango','peixe','pao','pão','leite','queijo','ovo','ovos','acucar','açúcar','sal','oleo','óleo','azeite','cafe','café','bolacha','biscoito','biscoitos','chocolate','manteiga','margarina','farinha','trigo','molho','extrato','atum','sardinha','iogurte','requeijao','requeijão','presunto','mortadela','linguica','linguiça','salsicha','bacon','verdura','legume','fruta','banana','maca','maçã','laranja','tomate','cebola','alho','batata','cenoura','alface','cereal','granola','aveia','mel','gelatina','sobremesa','bolo','torta','pao de forma','hamburguer','hambúrguer','nuggets','pizza'],
+  alimento: ['arroz','feijao','feijão','macarrao','macarrão','carne','frango','peixe','pao','pão','leite','queijo','ovo','ovos','acucar','açúcar','sal','oleo','óleo','azeite','cafe','café','bolacha','biscoito','biscoitos','chocolate','manteiga','margarina','farinha','trigo','molho','extrato','atum','sardinha','iogurte','requeijao','requeijão','presunto','mortadela','linguica','linguiça','salsicha','bacon','verdura','legume','fruta','banana','maca','maçã','laranja','tomate','cebola','alho','batata','cenoura','alface','cereal','granola','aveia','mel','gelatina','sobremesa','bolo','torta','hamburguer','hambúrguer','nuggets','pizza'],
   bebida: ['agua','água','suco','refrigerante','refri','coca','coca-cola','guarana','guaraná','pepsi','cerveja','vinho','vodka','whisky','energetico','energético','cha','chá','isotonico','isotônico','gatorade','schweppes','tonica','tônica'],
-  higiene: ['sabonete','shampoo','condicionador','creme dental','pasta de dente','escova','desodorante','papel higienico','papel higiênico','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilette','lamina','lâmina','aparelho','creme','pomada','fio dental','enxaguante'],
-  limpeza: ['detergente','sabao em po','sabão em pó','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano','saco de lixo','alvejante','limpa vidro','cloro','desengordurante','lustra moveis','lustra móveis']
+  higiene: ['sabonete','shampoo','condicionador','creme dental','pasta de dente','escova','desodorante','papel higienico','papel higiênico','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme','pomada','fio dental','enxaguante'],
+  limpeza: ['detergente','sabao em po','sabão em pó','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano','saco de lixo','alvejante','limpa vidro','cloro','desengordurante']
 };
 
 function detectCategory(name){
@@ -651,314 +680,4 @@ $('copiar').onclick = () => {
       const ta = document.createElement('textarea');
       ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
       document.body.appendChild(ta); ta.select(); document.execCommand('copy');
-      document.body.removeChild(ta); done();
-    }catch(e){ toast('Não foi possível copiar'); }
-  };
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
-    else fallback();
-  }catch(e){ fallback(); }
-};
-
-// ============================================================
-// PESSOAS
-// ============================================================
-function renderPeople(){
-  const active = document.activeElement;
-  const isEditing = active && active.tagName === 'INPUT' && active.dataset.n !== undefined;
-  if(isEditing) return;
-  $('people').innerHTML = state.people.map((n, i) =>
-    '<div class="p"><i>' + (i + 1) + '</i><input class="input" data-n="' + i + '" value="' + esc(n) + '" maxlength="20" aria-label="Nome da pessoa ' + (i + 1) + '"><button class="icon" data-rmp="' + i + '" aria-label="Remover ' + esc(n) + '" style="flex:0 0 auto;width:44px;height:44px;font-size:20px">✕</button></div>'
-  ).join('');
-}
-$('people').addEventListener('input', e => {
-  const i = e.target.dataset.n; if(i === undefined) return;
-  state.people[+i] = e.target.value;
-  saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
-});
-$('people').addEventListener('focusout', e => {
-  const i = e.target.dataset.n; if(i === undefined) return;
-  const trimmed = e.target.value.trim();
-  state.people[+i] = trimmed || ('Pessoa ' + (+i + 1));
-  e.target.value = state.people[+i];
-  saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
-});
-$('people').addEventListener('click', e => {
-  const b = e.target.closest('[data-rmp]'); if(!b) return;
-  if(state.people.length <= 2){ toast('Mínimo de 2 pessoas'); return; }
-  const i = +b.dataset.rmp;
-  state.people.splice(i, 1);
-  state.items = state.items.map(it => {
-    it.who = it.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
-    return it;
-  }).filter(it => it.who.length);
-  form.who = form.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
-  if(form.editing && form.who.length === 0 && form.type === 'ind') resetForm();
-  saveToCloud(); renderAll(); renderPeople();
-  toast('Pessoa removida');
-});
-$('add-pessoa').onclick = () => {
-  if(state.people.length >= 20){ toast('Máximo de 20 pessoas'); return; }
-  const newIdx = state.people.length;
-  state.people.push('Pessoa ' + (newIdx + 1));
-  if(form.type === 'col') form.who.push(newIdx);
-  saveToCloud(); renderAll(); renderPeople();
-  toast('Pessoa adicionada');
-};
-
-let armed = false;
-$('limpar').onclick = () => {
-  const b = $('limpar');
-  if(!armed){ armed = true; b.textContent = 'Toque de novo para apagar tudo'; setTimeout(() => { armed = false; b.textContent = 'Limpar todos os itens'; }, 3500); return; }
-  state.items = []; saveToCloud(); armed = false; b.textContent = 'Limpar todos os itens'; renderAll(); toast('Carrinho limpo');
-};
-
-// ============================================================
-// ABAS
-// ============================================================
-function goTab(t){
-  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === t));
-  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
-  window.scrollTo(0, 0);
-}
-document.querySelector('.tabs').onclick = e => {
-  const b = e.target.closest('button'); if(!b) return;
-  goTab(b.dataset.tab);
-};
-
-// ============================================================
-// LISTAS DE COMPRAS
-// ============================================================
-function showCardsView(){
-  viewListId = null;
-  $('list-detail').style.display = 'none';
-  $('lists-view').style.display = '';
-  renderShoppingCards();
-}
-function showListView(id){
-  viewListId = id;
-  $('lists-view').style.display = 'none';
-  $('list-detail').style.display = '';
-  renderShoppingDetail();
-}
-function renderShoppingCards(){
-  const box = $('lists-cards');
-  if(!state.shoppingLists.length){
-    box.innerHTML = '<div class="empty">Nenhuma lista ainda.<br>Crie uma abaixo.</div>';
-    return;
-  }
-  box.innerHTML = state.shoppingLists.map(l => {
-    const total = l.items.length;
-    const done = l.items.filter(x => x.done).length;
-    const pct = total ? Math.round(done / total * 100) : 0;
-    const sub = total ? done + ' de ' + total + ' comprados' : 'Lista vazia';
-    return '<button type="button" class="list-card" data-list="' + l.id + '">' +
-      '<div class="lc-info">' +
-        '<div class="lc-title">' + esc(l.name) + '</div>' +
-        '<div class="lc-sub">' + sub + '</div>' +
-        '<div class="lc-bar"><i style="width:' + pct + '%"></i></div>' +
-      '</div>' +
-      '<span class="lc-chev">›</span>' +
-    '</button>';
-  }).join('');
-}
-
-function shRow(x){
-  const cat = getCategory(x.category || detectCategory(x.name));
-  return '<div class="sh' + (x.done ? ' done' : '') + '">' +
-    '<button type="button" class="cat-btn" data-cat-item="' + x.id + '" title="Categoria: ' + esc(cat.name) + ' — toque para mudar" aria-label="Categoria: ' + esc(cat.name) + '. Toque para mudar.">' + cat.emoji + '</button>' +
-    '<button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
-    (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
-    '<button type="button" class="icon" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + ' da lista">🗑️</button>' +
-  '</div>';
-}
-
-function renderShoppingDetail(){
-  const l = currentList();
-  if(!l){ showCardsView(); return; }
-
-  const titleEl = $('list-title');
-  if(document.activeElement !== titleEl) titleEl.value = l.name;
-
-  const total = l.items.length;
-  const doneCount = l.items.filter(x => x.done).length;
-  $('sh-count').textContent = total ? doneCount + ' de ' + total + ' comprados' : 'Sua lista está vazia';
-  $('sh-bar').style.width = total ? Math.round(doneCount / total * 100) + '%' : '0';
-  $('sh-clear').hidden = !doneCount;
-
-  if(!total){
-    $('sh-list').innerHTML = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
-    return;
-  }
-
-  const pending = l.items.filter(x => !x.done);
-  const done = l.items.filter(x => x.done);
-
-  const groups = {};
-  CATEGORIES.forEach(c => groups[c.id] = []);
-  pending.forEach(x => {
-    const cid = x.category || detectCategory(x.name);
-    if(!groups[cid]) groups[cid] = [];
-    groups[cid].push(x);
-  });
-
-  let h = '';
-  let anyPending = false;
-  CATEGORIES.forEach(cat => {
-    const list = groups[cat.id];
-    if(!list || !list.length) return;
-    anyPending = true;
-    h += '<div class="cat-head">' + cat.emoji + ' ' + esc(cat.name) + '<span class="cat-count">' + list.length + '</span></div>';
-    h += list.map(shRow).join('');
-  });
-  if(!anyPending) h += '<div class="empty">Tudo comprado! 🎉</div>';
-
-  if(done.length){
-    h += '<div class="sub-h">Já comprados</div>';
-    h += done.map(shRow).join('');
-  }
-
-  $('sh-list').innerHTML = h;
-}
-
-function renderShoppingArea(){
-  if(viewListId){
-    if(!state.shoppingLists.some(l => l.id === viewListId)){ showCardsView(); return; }
-    $('lists-view').style.display = 'none';
-    $('list-detail').style.display = '';
-    renderShoppingDetail();
-  }else{
-    $('list-detail').style.display = 'none';
-    $('lists-view').style.display = '';
-    renderShoppingCards();
-  }
-}
-
-$('lists-cards').onclick = e => {
-  const b = e.target.closest('.list-card'); if(!b) return;
-  showListView(b.dataset.list);
-};
-$('add-list').onclick = () => {
-  const base = 'Nova lista';
-  let finalName = base, i = 2;
-  while(state.shoppingLists.some(l => l.name === finalName)){ finalName = base + ' ' + i; i++; }
-  const id = newListId();
-  state.shoppingLists.push({ id, name: finalName, items: [] });
-  saveToCloud();
-  showListView(id);
-  setTimeout(() => { const el = $('list-title'); el.focus(); el.select(); }, 100);
-};
-$('back-lists').onclick = () => showCardsView();
-$('list-title').addEventListener('input', e => {
-  const l = currentList(); if(!l) return;
-  l.name = e.target.value;
-  saveToCloud();
-});
-$('list-title').addEventListener('focusout', e => {
-  const l = currentList(); if(!l) return;
-  const t = e.target.value.trim() || 'Lista sem nome';
-  l.name = t; e.target.value = t;
-  saveToCloud(); renderShoppingCards();
-});
-let listArmed = null;
-$('del-list').onclick = () => {
-  if(!viewListId) return;
-  if(listArmed !== viewListId){
-    listArmed = viewListId;
-    toast('Toque de novo para excluir a lista');
-    setTimeout(() => { if(listArmed === viewListId) listArmed = null; }, 3000);
-    return;
-  }
-  state.shoppingLists = state.shoppingLists.filter(x => x.id !== viewListId);
-  listArmed = null;
-  viewListId = null;
-  saveToCloud(); renderAll();
-  toast('Lista excluída');
-};
-
-function addShopping(){
-  const l = currentList(); if(!l) return;
-  const inp = $('sh-nome');
-  const parts = inp.value.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
-  if(!parts.length){ inp.focus(); return; }
-  let added = 0;
-  parts.forEach(n => {
-    const k = norm(n);
-    const dup = l.items.some(x => !x.done && norm(x.name) === k);
-    if(dup) return;
-    const name = n.charAt(0).toUpperCase() + n.slice(1);
-    l.items.push({
-      id: Date.now() + Math.random(),
-      name,
-      category: detectCategory(name),
-      done: false
-    });
-    added++;
-  });
-  inp.value = '';
-  saveToCloud(); renderShoppingArea(); inp.focus();
-  toast(added ? (added === 1 ? 'Adicionado à lista' : added + ' itens adicionados') : 'Já está na lista');
-}
-$('sh-add').onclick = addShopping;
-$('sh-nome').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addShopping(); } });
-
-$('sh-list').onclick = e => {
-  const l = currentList(); if(!l) return;
-  const t = e.target.closest('[data-tog]');
-  const p = e.target.closest('[data-price]');
-  const d = e.target.closest('[data-shdel]');
-  const c = e.target.closest('[data-cat-item]');
-
-  function find(id){ return l.items.filter(x => String(x.id) === id)[0]; }
-
-  if(c){
-    const it = find(c.dataset.catItem); if(!it) return;
-    const cur = it.category || detectCategory(it.name);
-    const idx = CATEGORIES.findIndex(cat => cat.id === cur);
-    const next = CATEGORIES[(idx + 1) % CATEGORIES.length];
-    it.category = next.id;
-    saveToCloud(); renderShoppingArea();
-    toast(next.emoji + ' ' + next.name);
-    return;
-  }
-  if(t){
-    const x = find(t.dataset.tog);
-    if(x){ x.done = !x.done; saveToCloud(); renderShoppingArea(); }
-  }else if(d){
-    l.items = l.items.filter(x => String(x.id) !== d.dataset.shdel);
-    saveToCloud(); renderShoppingArea();
-  }else if(p){
-    const it = find(p.dataset.price); if(!it) return;
-    if(form.editing) resetForm();
-    form.fromList = it.id;
-    form.fromListId = l.id;
-    $('nome').value = it.name;
-    $('preco').value = '';
-    goTab('itens');
-    setTimeout(() => $('preco').focus(), 100);
-  }
-};
-$('sh-clear').onclick = () => {
-  const l = currentList(); if(!l) return;
-  l.items = l.items.filter(x => !x.done);
-  saveToCloud(); renderShoppingArea();
-};
-
-// ============================================================
-// RENDER GERAL
-// ============================================================
-function renderAll(){
-  renderList();
-  renderSummary();
-  renderChips();
-  renderPreview();
-  renderShoppingArea();
-  renderPeople();
-}
-
-renderPeople();
-renderAll();
-setSync('Conectando…');
-</script>
-</body>
-</html>
+      document.body.removeChild
