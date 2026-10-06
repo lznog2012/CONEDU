@@ -147,13 +147,21 @@ button{cursor:pointer;border:0;background:none}
 .addrow{display:flex;gap:8px}
 .addrow .input{flex:1}
 .addrow button{flex:0 0 auto;width:56px;height:52px;border-radius:10px;background:var(--ink);color:var(--surface);font-family:var(--head);font-size:28px;font-weight:800}
+
+/* Seletor de categoria do "adicionar" */
+.cat-picker{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.cat-picker::-webkit-scrollbar{display:none}
+.cat-chip{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.cat-chip.on{border-color:var(--coletivo);background:var(--coletivo-bg);color:var(--coletivo)}
+.cat-chip.auto{font-style:italic}
+
 .progress{margin:14px 2px 6px;font-weight:600;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;align-items:center}
 .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0 2px 12px}
 .bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
 
 /* ITEM DA LISTA */
 .sh{display:flex;align-items:flex-start;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding:6px 6px 6px 0}
-.sh-main{flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 4px 6px 12px;gap:2px}
+.sh-main{flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 4px 6px 12px;gap:2px;align-items:flex-start}
 .sh .tog{display:flex;align-items:center;gap:12px;text-align:left;font-size:18px;font-weight:600;padding:0;background:none;min-height:32px;color:inherit;width:100%}
 .sh .box{flex:0 0 28px;height:28px;border-radius:8px;border:2.5px solid var(--ink);display:grid;place-items:center;font-size:18px;line-height:1;color:transparent}
 .sh .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -161,8 +169,11 @@ button{cursor:pointer;border:0;background:none}
 .sh.done .box{background:var(--ok);border-color:var(--ok);color:#fff}
 .sh .price{flex:0 0 auto;height:40px;padding:0 10px;border-radius:8px;background:var(--yellow);color:var(--on-yellow);font-weight:700;font-size:14px;border:2px solid var(--on-yellow);align-self:center}
 .sh .icon.shdel{flex:0 0 auto;width:40px;height:40px;border-radius:8px;font-size:17px;align-self:center}
-.sh-hint{margin:2px 0 0 40px;font-size:13px;color:var(--individual);text-align:left;font-weight:700;text-decoration:underline;text-underline-offset:2px;background:none;border:none;cursor:pointer;padding:4px 0;line-height:1.3;align-self:flex-start}
-.sh-hint:active{opacity:.6}
+.sh-cat{font-size:12px;color:var(--muted);background:none;border:0;padding:2px 0;margin:0 0 0 40px;font-weight:500;cursor:pointer;text-align:left;line-height:1.2;border-bottom:1px dotted var(--line);align-self:flex-start}
+.sh-cat:hover{color:var(--coletivo);border-bottom-color:var(--coletivo)}
+.sh-cat:active{color:var(--coletivo)}
+.sh-cat .cat-em{font-size:13px;margin-right:3px}
+.sh.done .sh-cat{opacity:.6}
 
 .cat-head{display:flex;align-items:center;gap:10px;margin:20px 2px 8px}
 .cat-head:first-child{margin-top:6px}
@@ -189,7 +200,7 @@ button{cursor:pointer;border:0;background:none}
 /* BOTTOM SHEET */
 .sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
 .sheet.on{opacity:1;pointer-events:auto}
-.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(30px);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.15)}
+.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(30px);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.15);max-height:85vh;overflow-y:auto}
 .sheet.on .sheet-in{transform:translateY(0)}
 .sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
 .sheet-head b{font-family:var(--head);font-size:22px;font-weight:800}
@@ -200,6 +211,20 @@ button{cursor:pointer;border:0;background:none}
 .cat-option:active{background:var(--line)}
 .cat-option.on{background:var(--coletivo-bg);border-color:var(--coletivo);color:var(--coletivo)}
 .cat-option .em{font-size:22px;line-height:1}
+.sheet-actions{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.sheet-actions button{padding:12px 16px;border-radius:12px;border:2px dashed var(--line);background:transparent;font-weight:600;color:var(--muted);font-size:15px;flex:1;min-height:52px}
+.sheet-actions button:active{background:var(--bg)}
+.sheet-actions button.add-new{color:var(--coletivo);border-color:var(--coletivo)}
+
+.newcat-form{margin-top:14px;padding:14px;background:var(--bg);border-radius:12px;display:none}
+.newcat-form.on{display:block}
+.newcat-row{display:flex;gap:8px;margin-bottom:8px}
+.newcat-row .emoji-input{flex:0 0 74px;width:74px;text-align:center;font-size:24px;padding:0 6px}
+.newcat-row .name-input{flex:1}
+.newcat-actions{display:flex;gap:8px;margin-top:4px}
+.newcat-actions button{flex:1;height:48px;border-radius:10px;font-weight:700;font-size:15px}
+.newcat-actions .save{background:var(--coletivo);color:#fff}
+.newcat-actions .cancelbtn{background:var(--bg);border:2px solid var(--line);color:var(--muted)}
 @media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
@@ -229,7 +254,7 @@ button{cursor:pointer;border:0;background:none}
         <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
         <button type="button" id="sh-add" aria-label="Adicionar à lista">+</button>
       </div>
-      <p class="hint" style="margin:8px 2px 0">Dica: escreva vários separados por vírgula (arroz, feijão, café).</p>
+      <div class="cat-picker" id="sh-cat-picker"></div>
       <div class="progress"><span id="sh-count"></span><button type="button" class="link" id="sh-clear" hidden>Limpar comprados</button></div>
       <div class="bar"><i id="sh-bar"></i></div>
       <div id="sh-list"></div>
@@ -293,11 +318,26 @@ button{cursor:pointer;border:0;background:none}
 <div class="sheet" id="cat-sheet" aria-hidden="true">
   <div class="sheet-in">
     <div class="sheet-head">
-      <b>Escolher categoria</b>
+      <b id="sheet-title">Escolher categoria</b>
       <button type="button" id="cat-close" aria-label="Fechar">✕</button>
     </div>
     <div class="sheet-item-name" id="cat-item-name"></div>
     <div class="cat-options" id="cat-options"></div>
+
+    <div class="sheet-actions">
+      <button type="button" class="add-new" id="cat-new-btn">+ Nova categoria</button>
+    </div>
+
+    <div class="newcat-form" id="newcat-form">
+      <div class="newcat-row">
+        <input class="input emoji-input" id="newcat-emoji" type="text" maxlength="4" placeholder="🍕" aria-label="Emoji da categoria">
+        <input class="input name-input" id="newcat-name" type="text" maxlength="24" placeholder="Nome da categoria" aria-label="Nome da categoria">
+      </div>
+      <div class="newcat-actions">
+        <button type="button" class="cancelbtn" id="newcat-cancel">Cancelar</button>
+        <button type="button" class="save" id="newcat-save">Criar categoria</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -330,52 +370,24 @@ const app = initializeApp(firebaseConfig);
 const db = getFirestore(app);
 const DOC_REF = doc(db, 'conedu2026', 'estado');
 
-// ---------- CATEGORIAS ----------
-const CATEGORIES = [
-  { id: 'alimento', name: 'Alimentação', emoji: '🍚' },
-  { id: 'bebida',   name: 'Bebidas',     emoji: '🥤' },
-  { id: 'higiene',  name: 'Higiene',     emoji: '🧴' },
-  { id: 'limpeza',  name: 'Limpeza',     emoji: '🧽' },
-  { id: 'outros',   name: 'Outros',      emoji: '📦' }
+// ---------- CATEGORIAS PADRÃO ----------
+const DEFAULT_CATEGORIES = [
+  { id: 'alimento', name: 'Alimentação', emoji: '🍚', builtin: true },
+  { id: 'bebida',   name: 'Bebidas',     emoji: '🥤', builtin: true },
+  { id: 'higiene',  name: 'Higiene',     emoji: '🧴', builtin: true },
+  { id: 'limpeza',  name: 'Limpeza',     emoji: '🧽', builtin: true },
+  { id: 'outros',   name: 'Outros',      emoji: '📦', builtin: true }
 ];
 
 const KEYWORDS = {
   alimento: ['arroz','feijao','feijão','macarrao','macarrão','carne','frango','peixe','pao','pão','leite','queijo','ovo','ovos','acucar','açúcar','sal','oleo','óleo','azeite','cafe','café','bolacha','biscoito','biscoitos','chocolate','manteiga','margarina','farinha','trigo','molho','extrato','atum','sardinha','iogurte','requeijao','requeijão','presunto','mortadela','linguica','linguiça','salsicha','bacon','verdura','legume','fruta','banana','maca','maçã','laranja','tomate','cebola','alho','batata','cenoura','alface','cereal','granola','aveia','mel','gelatina','sobremesa','bolo','torta','hamburguer','hambúrguer','nuggets','pizza'],
   bebida: ['agua','água','suco','refrigerante','refri','coca','coca-cola','guarana','guaraná','pepsi','cerveja','vinho','vodka','whisky','energetico','energético','cha','chá','isotonico','isotônico','gatorade','schweppes','tonica','tônica'],
-  higiene: ['sabonete','shampoo','condicionador','creme dental','pasta de dente','escova','desodorante','papel higienico','papel higiênico','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme','pomada','fio dental','enxaguante'],
-  limpeza: ['detergente','sabao em po','sabão em pó','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano','saco de lixo','alvejante','limpa vidro','cloro','desengordurante']
+  higiene: ['sabonete','shampoo','condicionador','creme dental','pasta de dente','escova de dente','desodorante','papel higienico','papel higiênico','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme','pomada','fio dental','enxaguante','escova'],
+  limpeza: ['detergente','sabao em po','sabão em pó','sabao','sabão','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano de chao','pano de chão','saco de lixo','alvejante','limpa vidro','cloro','desengordurante','sabao liquido','sabão líquido']
 };
 
 function norm(s){ return String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
 function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-function detectCategory(name){
-  const n = norm(name);
-  for(const cat of ['alimento','bebida','higiene','limpeza']){
-    if(KEYWORDS[cat].some(k => n.includes(norm(k)))) return cat;
-  }
-  return 'outros';
-}
-function getCategory(id){
-  return CATEGORIES.find(c => c.id === id) || CATEGORIES[CATEGORIES.length - 1];
-}
-
-// ---------- ESTADO ----------
-const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
-function newListId(){ return 'list-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
-
-let state = {
-  people: defaultNames.slice(),
-  items: [],
-  shoppingLists: [{ id: newListId(), name: 'Lista de compras', items: [] }]
-};
-
-const clientId = Math.random().toString(36).slice(2) + Date.now();
-let applyingRemote = false;
-let saveTimeout = null;
-let viewListId = null;
-
-const $ = id => document.getElementById(id);
-
 function brl(c){ return (c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
 function parsePrice(v){
   v = String(v).replace(/[^\d,.]/g,'');
@@ -385,6 +397,41 @@ function parsePrice(v){
   const n = parseFloat(v);
   return isNaN(n) ? 0 : Math.round(n * 100);
 }
+function uid(prefix){ return (prefix||'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+// ---------- ESTADO ----------
+const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
+
+let state = {
+  people: defaultNames.slice(),
+  items: [],
+  shoppingLists: [{ id: uid('list'), name: 'Lista de compras', items: [] }],
+  customCategories: []
+};
+
+const clientId = Math.random().toString(36).slice(2) + Date.now();
+let applyingRemote = false;
+let saveTimeout = null;
+let viewListId = null;
+let forcedCategory = null;   // null = automático; id = força categoria
+
+const $ = id => document.getElementById(id);
+
+function allCategories(){
+  return DEFAULT_CATEGORIES.concat(state.customCategories || []);
+}
+function getCategory(id){
+  const list = allCategories();
+  return list.find(c => c.id === id) || list.find(c => c.id === 'outros') || list[list.length-1];
+}
+function detectCategory(name){
+  const n = norm(name);
+  for(const cat of ['alimento','bebida','higiene','limpeza']){
+    if(KEYWORDS[cat].some(k => n.includes(norm(k)))) return cat;
+  }
+  return 'outros';
+}
+
 function allIdx(){ return state.people.map((_, i) => i); }
 function split(total, idx){
   const n = idx.length, base = Math.floor(total / n), rem = total - base * n;
@@ -427,6 +474,7 @@ function saveToCloud(){
       people: state.people.slice(),
       items: JSON.parse(JSON.stringify(state.items)),
       shoppingLists: JSON.parse(JSON.stringify(state.shoppingLists)),
+      customCategories: JSON.parse(JSON.stringify(state.customCategories || [])),
       updatedAt: Date.now(),
       lastWriter: clientId
     };
@@ -444,7 +492,7 @@ onSnapshot(DOC_REF, snapshot => {
   if(!snapshot.exists()){
     setDoc(DOC_REF, {
       people: state.people, items: [], shoppingLists: state.shoppingLists,
-      updatedAt: Date.now(), lastWriter: clientId
+      customCategories: [], updatedAt: Date.now(), lastWriter: clientId
     });
     return;
   }
@@ -455,13 +503,14 @@ onSnapshot(DOC_REF, snapshot => {
   applyingRemote = true;
   state.people = data.people.slice();
   state.items = data.items ? JSON.parse(JSON.stringify(data.items)) : [];
+  state.customCategories = Array.isArray(data.customCategories) ? JSON.parse(JSON.stringify(data.customCategories)) : [];
 
   if(Array.isArray(data.shoppingLists) && data.shoppingLists.length){
     state.shoppingLists = JSON.parse(JSON.stringify(data.shoppingLists));
   }else if(Array.isArray(data.shopping) && data.shopping.length){
-    state.shoppingLists = [{ id: newListId(), name: 'Lista de compras', items: JSON.parse(JSON.stringify(data.shopping)) }];
+    state.shoppingLists = [{ id: uid('list'), name: 'Lista de compras', items: JSON.parse(JSON.stringify(data.shopping)) }];
   }else if(!state.shoppingLists || !state.shoppingLists.length){
-    state.shoppingLists = [{ id: newListId(), name: 'Lista de compras', items: [] }];
+    state.shoppingLists = [{ id: uid('list'), name: 'Lista de compras', items: [] }];
   }
 
   ensureCategories();
@@ -479,7 +528,9 @@ onSnapshot(DOC_REF, snapshot => {
   setSync('Sem conexão', 'err');
 });
 
-// ---------- FORMULÁRIO ----------
+// ============================================================
+// FORMULÁRIO DO CARRINHO
+// ============================================================
 let form = { type: 'col', qty: 1, who: allIdx(), editing: null, fromList: null, fromListId: null };
 
 function renderChips(){
@@ -579,7 +630,9 @@ function addItem(){
 $('add').onclick = addItem;
 $('cancel').onclick = resetForm;
 
-// ---------- CARRINHO ----------
+// ============================================================
+// CARRINHO
+// ============================================================
 function renderList(){
   const box = $('lista');
   $('count').textContent = state.items.length ? state.items.length + (state.items.length === 1 ? ' item' : ' itens') : '';
@@ -627,7 +680,9 @@ $('lista').onclick = e => {
   }
 };
 
-// ---------- RESUMO ----------
+// ============================================================
+// RESUMO
+// ============================================================
 function compute(){
   const res = state.people.map(() => ({ col: 0, ind: 0, lines: [] }));
   let total = 0;
@@ -680,7 +735,9 @@ $('copiar').onclick = () => {
   }catch(e){ fallback(); }
 };
 
-// ---------- PESSOAS ----------
+// ============================================================
+// PESSOAS
+// ============================================================
 function renderPeople(){
   const active = document.activeElement;
   const isEditing = active && active.tagName === 'INPUT' && active.dataset.n !== undefined;
@@ -731,7 +788,9 @@ $('limpar').onclick = () => {
   state.items = []; saveToCloud(); armed = false; b.textContent = 'Limpar todos os itens'; renderAll(); toast('Carrinho limpo');
 };
 
-// ---------- ABAS ----------
+// ============================================================
+// ABAS
+// ============================================================
 function goTab(t){
   document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === t));
   document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
@@ -742,7 +801,9 @@ document.querySelector('.tabs').onclick = e => {
   goTab(b.dataset.tab);
 };
 
-// ---------- LISTAS DE COMPRAS ----------
+// ============================================================
+// LISTAS DE COMPRAS
+// ============================================================
 function showCardsView(){
   viewListId = null;
   $('list-detail').style.display = 'none';
@@ -779,14 +840,11 @@ function renderShoppingCards(){
 
 function shRow(x){
   const cid = x.category || detectCategory(x.name);
-  const needsCat = (cid === 'outros');
-  const hint = (!x.done && needsCat)
-    ? '<button type="button" class="sh-hint" data-pick-cat="' + x.id + '">Escolher categoria →</button>'
-    : '';
+  const cat = getCategory(cid);
   return '<div class="sh' + (x.done ? ' done' : '') + '">' +
     '<div class="sh-main">' +
       '<button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
-      hint +
+      '<button type="button" class="sh-cat" data-pick-cat="' + x.id + '"><span class="cat-em">' + cat.emoji + '</span>' + esc(cat.name) + ' ▾</button>' +
     '</div>' +
     (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
     '<button type="button" class="icon shdel" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + '">🗑️</button>' +
@@ -806,6 +864,9 @@ function renderShoppingDetail(){
   $('sh-bar').style.width = total ? Math.round(doneCount / total * 100) + '%' : '0';
   $('sh-clear').hidden = !doneCount;
 
+  // Picker de categoria (para o "adicionar")
+  renderCatPicker();
+
   if(!total){
     $('sh-list').innerHTML = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
     return;
@@ -814,8 +875,10 @@ function renderShoppingDetail(){
   const pending = l.items.filter(x => !x.done);
   const done = l.items.filter(x => x.done);
 
+  // Agrupa pendentes por TODAS as categorias (inclusive customizadas)
+  const allCats = allCategories();
   const groups = {};
-  CATEGORIES.forEach(c => groups[c.id] = []);
+  allCats.forEach(c => groups[c.id] = []);
   pending.forEach(x => {
     const cid = x.category || detectCategory(x.name);
     if(!groups[cid]) groups[cid] = [];
@@ -824,7 +887,8 @@ function renderShoppingDetail(){
 
   let h = '';
   let anyPending = false;
-  CATEGORIES.forEach(cat => {
+  // Ordena: categorias default primeiro, customizadas no fim, e só mostra se tem itens
+  allCats.forEach(cat => {
     const list = groups[cat.id];
     if(!list || !list.length) return;
     anyPending = true;
@@ -840,6 +904,23 @@ function renderShoppingDetail(){
 
   $('sh-list').innerHTML = h;
 }
+
+function renderCatPicker(){
+  const box = $('sh-cat-picker');
+  if(!box) return;
+  const all = allCategories();
+  let h = '<button type="button" class="cat-chip auto' + (forcedCategory === null ? ' on' : '') + '" data-cat="auto">✨ Auto</button>';
+  h += all.map(c =>
+    '<button type="button" class="cat-chip' + (forcedCategory === c.id ? ' on' : '') + '" data-cat="' + c.id + '"><span>' + c.emoji + '</span>' + esc(c.name) + '</button>'
+  ).join('');
+  box.innerHTML = h;
+}
+$('sh-cat-picker').onclick = e => {
+  const b = e.target.closest('[data-cat]'); if(!b) return;
+  const v = b.dataset.cat;
+  forcedCategory = (v === 'auto') ? null : v;
+  renderCatPicker();
+};
 
 function renderShoppingArea(){
   if(viewListId){
@@ -862,7 +943,7 @@ $('add-list').onclick = () => {
   const base = 'Nova lista';
   let finalName = base, i = 2;
   while(state.shoppingLists.some(l => l.name === finalName)){ finalName = base + ' ' + i; i++; }
-  const id = newListId();
+  const id = uid('list');
   state.shoppingLists.push({ id, name: finalName, items: [] });
   saveToCloud();
   showListView(id);
@@ -910,7 +991,7 @@ function addShopping(){
     l.items.push({
       id: Date.now() + Math.random(),
       name,
-      category: detectCategory(name),
+      category: forcedCategory || detectCategory(name),
       done: false
     });
     added++;
@@ -959,15 +1040,22 @@ $('sh-clear').onclick = () => {
   saveToCloud(); renderShoppingArea();
 };
 
-// ---------- SELETOR DE CATEGORIA (BOTTOM SHEET) ----------
+// ============================================================
+// BOTTOM SHEET — ESCOLHER / CRIAR CATEGORIA
+// ============================================================
 let sheetItemId = null;
+
 function openCatSheet(itemId){
   const l = currentList(); if(!l) return;
   const it = l.items.find(x => String(x.id) === String(itemId));
   if(!it) return;
   sheetItemId = it.id;
   $('cat-item-name').textContent = it.name;
+  $('sheet-title').textContent = 'Categoria de "' + it.name + '"';
   renderCatOptions(it.category || detectCategory(it.name));
+  $('newcat-form').classList.remove('on');
+  $('newcat-emoji').value = '';
+  $('newcat-name').value = '';
   $('cat-sheet').classList.add('on');
   $('cat-sheet').setAttribute('aria-hidden','false');
 }
@@ -977,7 +1065,7 @@ function closeCatSheet(){
   sheetItemId = null;
 }
 function renderCatOptions(current){
-  $('cat-options').innerHTML = CATEGORIES.map(c =>
+  $('cat-options').innerHTML = allCategories().map(c =>
     '<button type="button" class="cat-option' + (c.id === current ? ' on' : '') + '" data-choose="' + c.id + '">' +
       '<span class="em">' + c.emoji + '</span>' +
       '<span>' + esc(c.name) + '</span>' +
@@ -986,21 +1074,59 @@ function renderCatOptions(current){
 }
 $('cat-options').onclick = e => {
   const b = e.target.closest('[data-choose]'); if(!b) return;
-  const l = currentList(); if(!l) return;
+  const l = currentList(); if(!l || !sheetItemId){ closeCatSheet(); return; }
   const it = l.items.find(x => String(x.id) === String(sheetItemId));
-  if(!it) { closeCatSheet(); return; }
+  if(!it){ closeCatSheet(); return; }
   it.category = b.dataset.choose;
   saveToCloud();
   closeCatSheet();
   renderShoppingArea();
-  toast(getCategory(it.category).emoji + ' ' + getCategory(it.category).name);
+  const cat = getCategory(it.category);
+  toast(cat.emoji + ' ' + cat.name);
 };
 $('cat-close').onclick = closeCatSheet;
 $('cat-sheet').addEventListener('click', e => {
   if(e.target === $('cat-sheet')) closeCatSheet();
 });
 
-// Long press no nome para trocar categoria (para itens já classificados)
+// Nova categoria
+$('cat-new-btn').onclick = () => {
+  const f = $('newcat-form');
+  f.classList.toggle('on');
+  if(f.classList.contains('on')) $('newcat-name').focus();
+};
+$('newcat-cancel').onclick = () => {
+  $('newcat-form').classList.remove('on');
+};
+$('newcat-save').onclick = () => {
+  const emoji = $('newcat-emoji').value.trim() || '🏷️';
+  const name = $('newcat-name').value.trim();
+  if(!name){ toast('Dê um nome para a categoria'); $('newcat-name').focus(); return; }
+
+  // Evita duplicar nome com existente
+  const existing = allCategories().find(c => norm(c.name) === norm(name));
+  let catId;
+  if(existing){
+    catId = existing.id;
+  }else{
+    catId = uid('cat');
+    state.customCategories.push({ id: catId, name, emoji });
+  }
+
+  // Aplica ao item que estava sendo editado
+  const l = currentList();
+  if(l && sheetItemId){
+    const it = l.items.find(x => String(x.id) === String(sheetItemId));
+    if(it) it.category = catId;
+  }
+
+  saveToCloud();
+  renderShoppingArea();
+  closeCatSheet();
+  toast('Categoria "' + name + '" criada');
+};
+
+// Long press no nome para abrir também (atalho)
 let pressTimer = null;
 let pressTarget = null;
 $('sh-list').addEventListener('touchstart', e => {
@@ -1008,14 +1134,11 @@ $('sh-list').addEventListener('touchstart', e => {
   if(!tog) return;
   pressTarget = tog.dataset.tog;
   clearTimeout(pressTimer);
-  pressTimer = setTimeout(() => {
-    if(pressTarget) openCatSheet(pressTarget);
-  }, 550);
+  pressTimer = setTimeout(() => { if(pressTarget) openCatSheet(pressTarget); }, 550);
 }, {passive:true});
 $('sh-list').addEventListener('touchend', () => { clearTimeout(pressTimer); pressTarget = null; });
 $('sh-list').addEventListener('touchmove', () => { clearTimeout(pressTimer); pressTarget = null; });
 $('sh-list').addEventListener('touchcancel', () => { clearTimeout(pressTimer); pressTarget = null; });
-// Mouse (desktop) também: clique com botão direito abre o sheet
 $('sh-list').addEventListener('contextmenu', e => {
   const tog = e.target.closest('[data-tog]');
   if(!tog) return;
@@ -1023,7 +1146,9 @@ $('sh-list').addEventListener('contextmenu', e => {
   openCatSheet(tog.dataset.tog);
 });
 
-// ---------- RENDER GERAL ----------
+// ============================================================
+// RENDER GERAL
+// ============================================================
 function renderAll(){
   renderList();
   renderSummary();
