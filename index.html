@@ -435,10 +435,12 @@ function getCategory(id){
 }
 function allIdx(){ return state.people.map((_, i) => i); }
 function split(total, idx){
-  const n = idx.length, base = Math.floor(total / n), rem = total - base * n;
+  const n = idx.length;
+  const each = Math.round(total / n);
   const out = {};
-  idx.forEach((p, k) => { out[p] = base + (k < rem ? 1 : 0); });
+  idx.forEach(p => { out[p] = each; });
   return out;
+}
 }
 function itemTotal(it){ return it.price * it.qty; }
 function currentList(){ return state.shoppingLists.find(x => x.id === viewListId); }
@@ -552,7 +554,7 @@ function renderPreview(){
   if(!total){ el.innerHTML = ''; return; }
   if(form.type === 'col'){
     if(!form.who.length){ el.innerHTML = ''; return; }
-    const per = Math.ceil(total / form.who.length);
+    const per = Math.round(total / form.who.length);
     el.innerHTML = 'Total <strong>' + brl(total) + '</strong> · cada um paga <strong>' + brl(per) + '</strong>';
   }else{
     el.innerHTML = 'Total <strong>' + brl(total) + '</strong>' + (form.who.length ? ' · ' + esc(state.people[form.who[0]]) : '');
@@ -645,7 +647,7 @@ function renderList(){
     let sub;
     if(it.type === 'col'){
       const all = it.who.length === state.people.length;
-      const per = Math.ceil(tot / it.who.length);
+      const per = Math.round(tot / it.who.length);
       sub = '<b class="t-col">Coletivo</b> · ' + (all ? 'todos' : it.who.length + ' pessoas') + ' · ' + brl(per) + ' cada';
     }else{
       sub = '<b class="t-ind">Individual</b> · ' + esc(state.people[it.who[0]] || '?');
