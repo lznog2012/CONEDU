@@ -441,7 +441,6 @@ function split(total, idx){
   idx.forEach(p => { out[p] = each; });
   return out;
 }
-}
 function itemTotal(it){ return it.price * it.qty; }
 function currentList(){ return state.shoppingLists.find(x => x.id === viewListId); }
 
