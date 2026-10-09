@@ -2,497 +2,1146 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Divisão do Supermercado</title>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>CONEDU 2026 - SUPERMERCADO</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600&family=Barlow+Condensed:wght@600;700;800&display=swap" rel="stylesheet">
 <style>
-  :root{
-    --bg:#f1f3f5; --card:#fff; --text:#16181d; --muted:#6b7280;
-    --brand:#2f7d4f; --brand-2:#256b41; --border:#e3e6ea; --danger:#c0392b;
+:root{
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  --bg:#EEF1F6; --surface:#FFFFFF; --ink:#13203B; --muted:#5B6783; --line:#D9DFEA;
+  --yellow:#FFD23F; --on-yellow:#13203B;
+  --coletivo:#1F5FBF; --coletivo-bg:#E3EDFB;
+  --individual:#C2490F; --individual-bg:#FDEBDD;
+  --danger:#C62F3B; --ok:#1E8E5A;
+  --head:'Barlow Condensed','Arial Narrow',Impact,sans-serif;
+  --body:'Barlow',system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0E1526; --surface:#18223A; --ink:#EEF2FB; --muted:#9AA7C4; --line:#2A3656;
+    --coletivo:#7DB0FF; --coletivo-bg:#1B2E52;
+    --individual:#FFA46B; --individual-bg:#4A2B16;
+    --danger:#FF7B86; --ok:#5ED39A;
   }
-  *{box-sizing:border-box}
-  body{margin:0;padding:16px;background:var(--bg);color:var(--text);
-    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
-    font-size:15px;line-height:1.45}
-  .wrap{max-width:960px;margin:0 auto}
-  header{text-align:center;margin-bottom:20px}
-  header h1{margin:0 0 4px;font-size:1.5rem}
-  header p{margin:0;color:var(--muted);font-size:.9rem}
-  .card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:16px;margin-bottom:14px}
-  .card h2{margin:0 0 12px;font-size:1.05rem}
-  .row{display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
-  input,select,button{font:inherit}
-  input[type=text],input[type=number],select{
-    padding:9px 11px;border:1px solid var(--border);border-radius:9px;background:#fff;width:100%}
-  input:focus,select:focus{outline:2px solid #bfe0cc;border-color:var(--brand)}
-  .btn{background:var(--brand);color:#fff;border:0;border-radius:9px;padding:10px 16px;cursor:pointer;font-weight:600}
-  .btn:hover{background:var(--brand-2)}
-  .btn.ghost{background:#fff;color:var(--muted);border:1px solid var(--border);font-weight:500}
-  .btn.ghost:hover{background:#f7f8f9;color:var(--danger);border-color:#f0c8c3}
-  .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
-  .chip{display:inline-flex;align-items:center;gap:6px;background:#eef6f0;color:#1f5c3a;
-    border-radius:999px;padding:5px 6px 5px 12px;font-size:.9rem}
-  .chip button{border:0;background:transparent;color:#1f5c3a;cursor:pointer;font-size:1.1rem;
-    line-height:1;padding:0 5px;border-radius:50%}
-  .chip button:hover{background:#d7ebde}
-  .grid{display:grid;grid-template-columns:2fr 1fr 1.3fr;gap:10px}
-  @media(max-width:640px){.grid{grid-template-columns:1fr}}
-  label.field{display:block;font-size:.78rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.03em}
-  label.field > input,label.field > select{margin-top:5px;font-weight:400;text-transform:none;letter-spacing:0}
-  .tipos{display:flex;gap:18px;margin:14px 0;flex-wrap:wrap}
-  .tipos label{display:flex;align-items:center;gap:6px;cursor:pointer}
-  .check{display:inline-flex;align-items:center;gap:6px;margin:0 14px 6px 0;font-size:.92rem;cursor:pointer}
-  .box-part{background:#f7faf8;border:1px solid #dcece1;border-radius:10px;padding:12px;margin-bottom:12px}
-  .box-part p{margin:0 0 8px;font-size:.85rem;color:var(--muted);font-weight:600}
-  table{width:100%;border-collapse:collapse;font-size:.9rem}
-  th,td{text-align:left;padding:8px 6px;border-bottom:1px solid var(--border);vertical-align:middle}
-  th{color:var(--muted);font-size:.75rem;text-transform:uppercase;letter-spacing:.03em}
-  td.num,th.num{text-align:right;white-space:nowrap}
-  tbody tr:last-child td{border-bottom:0}
-  .x{border:0;background:transparent;color:var(--danger);cursor:pointer;font-size:1.15rem;
-    line-height:1;padding:2px 7px;border-radius:6px}
-  .x:hover{background:#fdecea}
-  .muted{color:var(--muted)}
-  .table-wrap{overflow-x:auto}
-  .pos{color:#1f7a45;font-weight:600}
-  .neg{color:#c0392b;font-weight:600}
-  .zero{color:var(--muted)}
-  .total-linha{display:flex;justify-content:space-between;padding:12px 0 0;margin-top:8px;
-    font-weight:700;border-top:2px solid var(--border)}
-  .acerto{display:flex;align-items:center;gap:8px;padding:10px 13px;background:#f6faf7;
-    border:1px solid #dcece1;border-radius:10px;margin-bottom:8px;font-size:.93rem}
-  .acerto .valor{margin-left:auto;font-weight:700;color:#1f5c3a;white-space:nowrap}
-  .empty{color:var(--muted);font-size:.9rem;padding:6px 0;margin:0}
-  .foot{text-align:right;margin-bottom:30px}
-  .aviso{background:#eef6f0;border:1px solid #cde5d6;color:#1f5c3a;
-    border-radius:8px;padding:8px 12px;font-size:.82rem;margin-bottom:12px}
+}
+:root[data-theme="dark"]{
+  --bg:#0E1526; --surface:#18223A; --ink:#EEF2FB; --muted:#9AA7C4; --line:#2A3656;
+  --coletivo:#7DB0FF; --coletivo-bg:#1B2E52;
+  --individual:#FFA46B; --individual-bg:#4A2B16;
+  --danger:#FF7B86; --ok:#5ED39A;
+}
+*,*::before,*::after{box-sizing:inherit}
+html{height:100%;scroll-padding-top:env(safe-area-inset-top,0px);-webkit-text-size-adjust:100%}
+body{margin:0;min-height:100%;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.35;-webkit-tap-highlight-color:transparent}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer;border:0;background:none}
+:focus-visible{outline:3px solid var(--coletivo);outline-offset:2px}
+.app{max-width:560px;margin:0 auto;padding-bottom:150px}
+.top{background:var(--yellow);color:var(--on-yellow);padding:14px 16px 12px;border-bottom:4px solid var(--on-yellow)}
+.top h1{margin:0;font-family:var(--head);font-weight:800;font-size:30px;line-height:1;letter-spacing:.2px}
+.top p{margin:4px 0 0;font-size:14px;font-weight:500;opacity:.85}
+.panel{display:none;padding:14px 14px 0}
+.panel.on{display:block}
+.form{background:var(--surface);border:2px solid var(--ink);border-radius:14px;padding:14px}
+.form.editing{border-color:var(--coletivo);box-shadow:0 0 0 3px var(--coletivo-bg)}
+.row{display:flex;gap:10px}
+.field{flex:1;min-width:0}
+.field label{display:block;font-size:13px;font-weight:600;color:var(--muted);margin-bottom:4px}
+.input{width:100%;height:52px;border:2px solid var(--line);border-radius:10px;background:var(--bg);padding:0 12px;font-size:18px;font-weight:500}
+.input:focus{border-color:var(--coletivo);outline:none}
+.price-wrap{position:relative}
+.price-wrap span{position:absolute;left:12px;top:50%;transform:translateY(-50%);font-weight:700;color:var(--muted)}
+.price-wrap .input{padding-left:42px;font-family:var(--head);font-size:26px;font-weight:700}
+.qty{display:flex;align-items:center;height:52px;border:2px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.qty button{width:40px;height:100%;font-size:24px;font-weight:700}
+.qty button:active{background:var(--line)}
+.qty output{min-width:30px;text-align:center;font-family:var(--head);font-size:24px;font-weight:700}
+.field.qtyf{flex:0 0 auto}
+.seg{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:14px 0 12px}
+.seg button{height:54px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-weight:600;font-size:16px;line-height:1.1}
+.seg button small{display:block;font-weight:500;font-size:12px;color:var(--muted)}
+.seg button.on.col{background:var(--coletivo);border-color:var(--coletivo);color:#fff}
+.seg button.on.ind{background:var(--individual);border-color:var(--individual);color:#fff}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]) .seg button.on{color:#0E1526}
+  :root:not([data-theme="light"]) .seg button.on small{color:#0E1526}
+}
+:root[data-theme="dark"] .seg button.on,:root[data-theme="dark"] .seg button.on small{color:#0E1526}
+.seg button.on small{color:inherit;opacity:.85}
+.who-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
+.who-head b{font-size:14px;color:var(--muted);font-weight:600}
+.link{color:var(--coletivo);font-weight:600;font-size:14px;padding:6px 0}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{min-height:44px;padding:0 14px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-weight:600;font-size:16px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.chip.on.col{background:var(--coletivo-bg);border-color:var(--coletivo);color:var(--coletivo)}
+.chip.on.ind{background:var(--individual-bg);border-color:var(--individual);color:var(--individual)}
+.chip.on::before{content:"✓ "}
+.preview{margin:12px 0 0;min-height:22px;font-weight:600;color:var(--muted);font-size:15px}
+.preview strong{color:var(--ink)}
+.err{color:var(--danger);font-weight:600;font-size:14px;min-height:18px;margin-top:6px}
+.add{width:100%;height:58px;margin-top:6px;border-radius:12px;background:var(--ink);color:var(--surface);font-family:var(--head);font-weight:800;font-size:24px;letter-spacing:.3px}
+.add:active{transform:scale(.99)}
+.cancel{width:100%;height:44px;margin-top:6px;color:var(--muted);font-weight:600}
+.list-head{display:flex;justify-content:space-between;align-items:baseline;margin:20px 2px 8px}
+.list-head h2{margin:0;font-family:var(--head);font-size:22px;font-weight:700}
+.list-head span{color:var(--muted);font-size:14px;font-weight:500}
+.empty{text-align:center;color:var(--muted);padding:26px 10px;border:2px dashed var(--line);border-radius:14px;font-weight:500}
+.item{background:var(--surface);border:1px solid var(--line);border-left-width:6px;border-radius:12px;padding:10px 12px;margin-bottom:8px;display:flex;gap:10px;align-items:center}
+.item.col{border-left-color:var(--coletivo)}
+.item.ind{border-left-color:var(--individual)}
+.item .info{flex:1;min-width:0}
+.item .nm{font-weight:600;font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.item .sub{font-size:13px;color:var(--muted);margin-top:2px}
+.item .sub b{font-weight:600}
+.item .sub .t-col{color:var(--coletivo)} .item .sub .t-ind{color:var(--individual)}
+.item .val{font-family:var(--head);font-size:24px;font-weight:700;white-space:nowrap}
+.item .acts{display:flex;flex-direction:column;gap:2px}
+.icon{width:38px;height:34px;border-radius:8px;font-size:17px}
+.icon:active{background:var(--bg)}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;margin-bottom:10px;overflow:hidden}
+.card summary{list-style:none;display:flex;align-items:center;gap:12px;padding:14px;cursor:pointer;min-height:64px}
+.card summary::-webkit-details-marker{display:none}
+.card .pn{flex:1;font-weight:700;font-size:19px;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .pn small{display:block;font-weight:500;font-size:13px;color:var(--muted)}
+.card .tot{font-family:var(--head);font-weight:800;font-size:30px;white-space:nowrap}
+.card .chev{color:var(--muted);transition:transform .15s}
+.card[open] .chev{transform:rotate(90deg)}
+.card .body{border-top:1px solid var(--line);padding:6px 14px 12px}
+.card .ln{display:flex;justify-content:space-between;gap:10px;padding:6px 0;font-size:15px;border-bottom:1px dashed var(--line)}
+.card .ln:last-child{border-bottom:0}
+.card .ln span:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.card .tag{font-size:12px;font-weight:600;margin-left:6px}
+.tag.c{color:var(--coletivo)} .tag.i{color:var(--individual)}
+.grand{background:var(--ink);color:var(--surface);border-radius:14px;padding:14px 16px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+.grand .l{font-weight:600}
+.grand .l small{display:block;font-weight:500;opacity:.75;font-size:13px}
+.grand .v{font-family:var(--head);font-size:38px;font-weight:800}
+.btn{width:100%;height:54px;border-radius:12px;font-weight:700;font-size:17px;margin-bottom:10px}
+.btn.primary{background:var(--yellow);color:var(--on-yellow);border:2px solid var(--on-yellow)}
+.btn.ghost{border:2px solid var(--line);background:var(--surface)}
+.btn.danger{border:2px solid var(--danger);color:var(--danger);background:var(--surface)}
+.people .p{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.people .p i{flex:0 0 36px;height:36px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);display:grid;place-items:center;font-style:normal;font-family:var(--head);font-weight:800;font-size:20px}
+.hint{color:var(--muted);font-size:14px;margin:0 2px 14px}
+.list-card{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:var(--surface);border:2px solid var(--line);border-radius:14px;padding:14px;margin-bottom:10px;min-height:82px;transition:transform .08s}
+.list-card:active{transform:scale(.995);background:var(--bg)}
+.list-card .lc-info{flex:1;min-width:0}
+.list-card .lc-title{font-family:var(--head);font-size:24px;font-weight:700;line-height:1.1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.list-card .lc-sub{font-size:13px;color:var(--muted);margin-top:3px;font-weight:500}
+.list-card .lc-bar{height:6px;border-radius:99px;background:var(--line);overflow:hidden;margin-top:8px}
+.list-card .lc-bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+.list-card .lc-chev{font-size:32px;color:var(--muted);font-family:var(--head);font-weight:700;flex:0 0 auto}
+.detail-head{display:flex;align-items:center;gap:8px;margin-bottom:14px}
+.detail-head .back{flex:0 0 44px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:22px;font-weight:700;display:grid;place-items:center}
+.detail-head .back:active{background:var(--bg)}
+.detail-head .title-wrap{flex:1;min-width:0}
+.detail-head input.title{width:100%;height:44px;background:transparent;border:2px solid transparent;border-radius:10px;padding:0 8px;font-family:var(--head);font-size:26px;font-weight:700;color:var(--ink)}
+.detail-head input.title:hover{border-color:var(--line)}
+.detail-head input.title:focus{border-color:var(--coletivo);outline:none;background:var(--surface)}
+.detail-head .del{flex:0 0 44px;height:44px;border-radius:10px;border:2px solid var(--line);background:var(--surface);font-size:18px;display:grid;place-items:center}
+.detail-head .del:active{background:var(--bg);border-color:var(--danger)}
+.addrow{display:flex;gap:8px}
+.addrow .input{flex:1}
+.addrow button{flex:0 0 auto;width:56px;height:52px;border-radius:10px;background:var(--ink);color:var(--surface);font-family:var(--head);font-size:28px;font-weight:800}
+.cat-picker{display:flex;gap:6px;overflow-x:auto;padding:8px 2px 4px;-webkit-overflow-scrolling:touch;scrollbar-width:none}
+.cat-picker::-webkit-scrollbar{display:none}
+.cat-chip{flex:0 0 auto;min-height:36px;padding:0 12px;border-radius:999px;border:2px solid var(--line);background:var(--bg);font-size:14px;font-weight:600;color:var(--muted);white-space:nowrap;display:inline-flex;align-items:center;gap:5px}
+.cat-chip.on{border-color:var(--coletivo);background:var(--coletivo-bg);color:var(--coletivo)}
+.cat-chip.auto{font-style:italic}
+.progress{margin:14px 2px 6px;font-weight:600;color:var(--muted);font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden;margin:0 2px 12px}
+.bar i{display:block;height:100%;background:var(--ok);width:0;transition:width .2s}
+.sh{display:flex;align-items:flex-start;gap:6px;background:var(--surface);border:1px solid var(--line);border-radius:12px;margin-bottom:8px;padding:6px 6px 6px 0}
+.sh-main{flex:1;min-width:0;display:flex;flex-direction:column;padding:6px 4px 6px 12px;gap:2px;align-items:flex-start}
+.sh .tog{display:flex;align-items:center;gap:12px;text-align:left;font-size:18px;font-weight:600;padding:0;background:none;min-height:32px;color:inherit;width:100%}
+.sh .box{flex:0 0 28px;height:28px;border-radius:8px;border:2.5px solid var(--ink);display:grid;place-items:center;font-size:18px;line-height:1;color:transparent}
+.sh .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sh.done .nm{text-decoration:line-through;color:var(--muted);font-weight:500}
+.sh.done .box{background:var(--ok);border-color:var(--ok);color:#fff}
+.sh .price{flex:0 0 auto;height:40px;padding:0 10px;border-radius:8px;background:var(--yellow);color:var(--on-yellow);font-weight:700;font-size:14px;border:2px solid var(--on-yellow);align-self:center}
+.sh .icon.shdel{flex:0 0 auto;width:40px;height:40px;border-radius:8px;font-size:17px;align-self:center}
+.sh-cat{font-size:12px;color:var(--muted);background:none;border:0;padding:2px 0;margin:0 0 0 40px;font-weight:500;cursor:pointer;text-align:left;line-height:1.2;border-bottom:1px dotted var(--line);align-self:flex-start}
+.sh-cat:hover{color:var(--coletivo);border-bottom-color:var(--coletivo)}
+.sh-cat:active{color:var(--coletivo)}
+.sh-cat .cat-em{font-size:13px;margin-right:3px}
+.sh.done .sh-cat{opacity:.6}
+.cat-head{display:flex;align-items:center;gap:10px;margin:20px 2px 8px}
+.cat-head:first-child{margin-top:6px}
+.cat-head .cat-em{font-size:24px;line-height:1}
+.cat-head .cat-name{font-family:var(--head);font-size:21px;font-weight:800;color:var(--ink)}
+.cat-head .cat-count{margin-left:auto;font-family:var(--body);font-size:13px;font-weight:600;color:var(--muted);background:var(--line);padding:2px 9px;border-radius:999px}
+.sub-h{margin:18px 2px 8px;font-family:var(--head);font-size:20px;font-weight:700}
+.dock{position:fixed;left:0;right:0;bottom:0;z-index:5;background:var(--surface);border-top:2px solid var(--ink);padding-bottom:env(safe-area-inset-bottom,0px)}
+.dock .in{max-width:560px;margin:0 auto}
+.totalbar{display:flex;justify-content:space-between;align-items:baseline;padding:8px 16px 0}
+.totalbar span{font-size:14px;font-weight:600;color:var(--muted)}
+.totalbar b{font-family:var(--head);font-size:28px;font-weight:800}
+.tabs{display:grid;grid-template-columns:repeat(4,1fr)}
+.tabs button{height:54px;font-weight:600;font-size:15px;color:var(--muted);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;line-height:1.15}
+.tabs button em{font-style:normal;font-size:20px}
+.tabs button[aria-selected="true"]{color:var(--ink);box-shadow:inset 0 3px 0 var(--yellow);font-weight:700}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(150px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);padding:10px 16px;border-radius:999px;font-weight:600;font-size:15px;opacity:0;pointer-events:none;transition:opacity .2s;z-index:10;white-space:nowrap;max-width:90vw;overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1}
+.sync{position:fixed;top:calc(env(safe-area-inset-top,0px) + 8px);right:12px;background:var(--surface);border:2px solid var(--ink);border-radius:999px;padding:4px 10px;font-size:12px;font-weight:600;z-index:8;opacity:0;transition:opacity .3s}
+.sync.on{opacity:1}
+.sync.ok{border-color:var(--ok);color:var(--ok)}
+.sync.err{border-color:var(--danger);color:var(--danger)}
+.sheet{position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:20;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .2s}
+.sheet.on{opacity:1;pointer-events:auto}
+.sheet-in{background:var(--surface);width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));transform:translateY(30px);transition:transform .25s;box-shadow:0 -10px 40px rgba(0,0,0,.15);max-height:85vh;overflow-y:auto}
+.sheet.on .sheet-in{transform:translateY(0)}
+.sheet-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}
+.sheet-head b{font-family:var(--head);font-size:22px;font-weight:800}
+.sheet-head button{width:40px;height:40px;border-radius:10px;font-size:18px;background:var(--bg);color:var(--ink);display:grid;place-items:center}
+.sheet-item-name{font-size:14px;color:var(--muted);margin:-8px 0 14px;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-options{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cat-option{padding:14px;border-radius:12px;border:2px solid var(--line);background:var(--bg);font-weight:600;font-size:16px;display:flex;align-items:center;gap:10px;text-align:left;min-height:58px}
+.cat-option:active{background:var(--line)}
+.cat-option.on{background:var(--coletivo-bg);border-color:var(--coletivo);color:var(--coletivo)}
+.cat-option .em{font-size:22px;line-height:1}
+.sheet-actions{margin-top:14px;display:flex;gap:8px;flex-wrap:wrap}
+.sheet-actions button{padding:12px 16px;border-radius:12px;border:2px dashed var(--line);background:transparent;font-weight:600;color:var(--muted);font-size:15px;flex:1;min-height:52px}
+.sheet-actions button:active{background:var(--bg)}
+.sheet-actions button.add-new{color:var(--coletivo);border-color:var(--coletivo)}
+.newcat-form{margin-top:14px;padding:14px;background:var(--bg);border-radius:12px;display:none}
+.newcat-form.on{display:block}
+.newcat-row{display:flex;gap:8px;margin-bottom:8px}
+.newcat-row .emoji-input{flex:0 0 74px;width:74px;text-align:center;font-size:24px;padding:0 6px}
+.newcat-row .name-input{flex:1}
+.newcat-actions{display:flex;gap:8px;margin-top:4px}
+.newcat-actions button{flex:1;height:48px;border-radius:10px;font-weight:700;font-size:15px}
+.newcat-actions .save{background:var(--coletivo);color:#fff}
+.newcat-actions .cancelbtn{background:var(--bg);border:2px solid var(--line);color:var(--muted)}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
 </style>
 </head>
 <body>
-<div class="wrap">
-
-  <header>
-    <h1>🛒 Divisão do Supermercado</h1>
-    <p>Adicione as pessoas, lance os itens e veja quem paga quanto pra quem.</p>
+<div class="app">
+  <header class="top">
+    <h1>CONEDU 2026 - SUPERMERCADO</h1>
+    <p>Adicione o item, escolha quem paga, pronto.</p>
   </header>
 
-  <div class="aviso">
-    💡 Os valores por pessoa são <strong>arredondados</strong>. Ex: R$ 25,00 ÷ 3 = R$ 8,33 para cada um.
-    Se sobrar 1 centavo, ele fica com quem pagou o item.
-  </div>
+  <div class="sync" id="sync">Conectando…</div>
 
-  <!-- 1. PESSOAS -->
-  <section class="card">
-    <h2>1. Quem vai dividir?</h2>
-    <div class="row">
-      <input type="text" id="nomePessoa" placeholder="Nome da pessoa" style="flex:1;min-width:180px">
-      <button class="btn" id="btnAddPessoa">Adicionar</button>
+  <section class="panel on" id="p-lista" role="tabpanel">
+    <div id="lists-view">
+      <div id="lists-cards"></div>
+      <button class="btn ghost" id="add-list" style="margin-top:6px">+ Nova lista</button>
     </div>
-    <div class="chips" id="chipsPessoas"></div>
-  </section>
-
-  <!-- 2. ITENS -->
-  <section class="card">
-    <h2>2. Itens da compra</h2>
-    <form id="formItem" autocomplete="off">
-      <div class="grid">
-        <label class="field">Item
-          <input type="text" id="itemNome" placeholder="Ex: Arroz 5kg" required>
-        </label>
-        <label class="field">Valor (R$)
-          <input type="text" id="itemValor" inputmode="decimal" placeholder="0,00" required>
-        </label>
-        <label class="field">Quem pagou
-          <select id="itemPagador"></select>
-        </label>
+    <div id="list-detail" style="display:none">
+      <div class="detail-head">
+        <button type="button" class="back" id="back-lists" aria-label="Voltar">‹</button>
+        <div class="title-wrap">
+          <input type="text" class="title" id="list-title" maxlength="40" aria-label="Nome da lista">
+        </div>
+        <button type="button" class="del" id="del-list" aria-label="Excluir lista">🗑️</button>
       </div>
-
-      <div class="tipos">
-        <label><input type="radio" name="tipo" value="coletivo" checked> Coletivo (todos dividem)</label>
-        <label><input type="radio" name="tipo" value="individual"> Individual (só alguns)</label>
+      <div class="addrow">
+        <input class="input" id="sh-nome" type="text" placeholder="O que precisa comprar?" autocomplete="off" enterkeyhint="done" aria-label="Novo item da lista">
+        <button type="button" id="sh-add" aria-label="Adicionar à lista">+</button>
       </div>
+      <div class="cat-picker" id="sh-cat-picker"></div>
+      <div class="progress"><span id="sh-count"></span><button type="button" class="link" id="sh-clear" hidden>Limpar comprados</button></div>
+      <div class="bar"><i id="sh-bar"></i></div>
+      <div id="sh-list"></div>
+    </div>
+  </section>
 
-      <div class="box-part" id="boxParticipantes" hidden>
-        <p>Quem participa deste item?</p>
-        <div id="listaParticipantes"></div>
+  <section class="panel" id="p-itens" role="tabpanel">
+    <div class="form" id="form">
+      <div class="field">
+        <label for="nome">Item</label>
+        <input class="input" id="nome" type="text" placeholder="Ex: arroz, cerveja, sabonete" autocomplete="off" enterkeyhint="next">
       </div>
-
-      <button class="btn" type="submit">+ Adicionar item</button>
-    </form>
-  </section>
-
-  <!-- 3. LISTA DE ITENS -->
-  <section class="card">
-    <h2>3. Itens lançados</h2>
-    <div class="table-wrap">
-      <table id="tabelaItens">
-        <thead>
-          <tr>
-            <th>Item</th>
-            <th class="num">Valor</th>
-            <th>Tipo</th>
-            <th>Pagou</th>
-            <th>Participantes</th>
-            <thtoString class="num">Por pessoa</th>
-            <th></th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
+      <div class="row" style="margin-top:10px">
+        <div class="field">
+          <label for="preco">Preço (unidade)</label>
+          <div class="price-wrap"><span>R$</span><input class="input" id="preco" type="text" inputmode="decimal" placeholder="0,00" autocomplete="off"></div>
+        </div>
+        <div class="field qtyf">
+          <label>Qtd</label>
+          <div class="qty">
+            <button type="button" id="menos" aria-label="Diminuir quantidade">−</button>
+            <output id="qtd">1</output>
+            <button type="button" id="mais" aria-label="Aumentar quantidade">+</button>
+          </div>
+        </div>
+      </div>
+      <div class="seg" role="group" aria-label="Tipo do item">
+        <button type="button" class="col on" id="t-col">Coletivo<small>divide entre todos</small></button>
+        <button type="button" class="ind" id="t-ind">Individual<small>só de uma pessoa</small></button>
+      </div>
+      <div class="who-head">
+        <b id="who-label">Dividir entre:</b>
+        <button type="button" class="link" id="todos">Todos</button>
+      </div>
+      <div class="chips" id="chips"></div>
+      <div class="preview" id="preview"></div>
+      <div class="err" id="err" role="alert"></div>
+      <button type="button" class="add" id="add">ADICIONAR ITEM</button>
+      <button type="button" class="cancel" id="cancel" hidden>Cancelar edição</button>
     </div>
-    <p class="empty" id="vazioItens">Nenhum item lançado ainda.</p>
+    <div class="list-head"><h2>Carrinho</h2><span id="count"></span></div>
+    <div id="lista"></div>
   </section>
 
-  <!-- 4. RESUMO -->
-  <section class="card">
-    <h2>4. Resumo por pessoa</h2>
-    <div class="table-wrap">
-      <table id="tabelaResumo">
-        <thead>
-          <tr>
-            <th>Pessoa</th>
-            <th class="num">Consumiu</th>
-            <th class="num">Pagou</th>
-            <th class="num">Situação</th>
-          </tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-    <div class="total-linha">
-      <span>Total da compra</span>
-      <span id="totalGeral">R$ 0,00</span>
-    </div>
+  <section class="panel" id="p-resumo" role="tabpanel">
+    <div class="grand"><div class="l">Total do carrinho<small id="g-sub"></small></div><div class="v" id="g-total">R$ 0,00</div></div>
+    <div id="cards"></div>
+    <button class="btn primary" id="copiar">Copiar resumo para o WhatsApp</button>
   </section>
 
-  <!-- 5. ACERTO -->
-  <section class="card">
-    <h2>5. Como acertar as contas</h2>
-    <div id="listaAcertos"></div>
+  <section class="panel" id="p-pessoas" role="tabpanel">
+    <p class="hint">Toque no nome para editar. Máximo de 20 pessoas.</p>
+    <div class="people" id="people"></div>
+    <button class="btn ghost" id="add-pessoa" style="margin-top:4px">+ Adicionar pessoa</button>
+    <button class="btn danger" id="limpar">Limpar todos os itens</button>
   </section>
-
-  <div class="foot">
-    <button class="btn ghost" id="btnLimpar">Limpar tudo</button>
-  </div>
-
 </div>
 
-<script>
-(function(){
-  "use strict";
+<div class="toast" id="toast"></div>
 
-  const LS_KEY = 'divisao-supermercado-v3'; // v3: arredondamento simples
-  let state = { pessoas: [], itens: [] };
-
-  const $  = s => document.querySelector(s);
-  const $$ = s( => [...document.querySelectorAll(s)];
-  const uid = () => Math36.random().).slice(2, 9);
-
-  const brl = cents => (cents / 100).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
-  const esc = s => String(s).replace(/[&<>"']/g, c => (
-    {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]
-  ));
-  const nomeDe = id => (state.pessoas.find(p => p.id === id) || {}).nome || '—';
-
-  function carregar(){
-    try{
-      const raw = localStorage.getItem(LS_KEY);
-      if(raw){
-        const d = JSON.parse(raw);
-        state.pessoas = Array.isArray(d.pessoas) ? d.pessoas : [];
-        state.itens   = Array.isArray(d.itens)   ? d.itens   : [];
-      }
-    }catch(e){ console.warn('Não foi possível carregar dados salvos.', e); }
-  }
-  function salvar(){
-    try{ localStorage.setItem(LS_KEY, JSON.stringify(state)); }catch(e){}
-  }
-
-  function parseValor(str){
-    str = String(str).trim();
-    if(!str) return NaN;
-    if(str.includes(',')) str = str.replace(/\./g, '').replace(',', '.');
-    const n = parseFloat(str);
-    if(isNaN(n)) return NaN;
-    return Math.round(n * 100);
-  }
-
-  // ← AQUI: arredonda simples. Cada um paga o mesmo valor arredondado.
-  // Se a soma não fechar 100%, o centavo fica com quem pagou o item.
-  function dividirEmCentavos(totalCents, n){
-    if(n <= 0) return [];
-    const cota = Math.round(totalCents / n);
-    return new Array(n).fill(cota);
-  }
-
-  function participantesDe(item){
-    if(item.tipo === 'coletivo') return state.pessoas.map(p => p.id);
-    return (item.participantes || []).filter(id => state.pessoas.some(p => p.id === id));
-  }
-
-  function cotasDoItem(item){
-    const parts = participantesDe(item);
-    const cotas = {};
-    if(!parts.length) return { cotas, total: item.valor };
-    const valores = dividirEmCentavos(item.valor, parts.length);
-    parts.forEach((id, i) => { cotas[id] = valores[i]; });
-    return { cotas, total: item.valor };
-  }
-
-  function calcular(){
-    const resumo = {};
-    state.pessoas.forEach(p => resumo[p.id] = { consumiu: 0, pagou: 0 });
-
-    let total = 0;
-    state.itens.forEach(item => {
-      const { cotas, total: t } = cotasDoItem(item);
-      const parts = Object.keys(cotas);
-      if(!parts.length) return;
-      total += t;
-      if(resumo[item.pagadorId]) resumo[item.pagadorId].pagou += t;
-      parts.forEach(id => { if(resumo[id]) resumo[id].consumiu += cotas[id]; });
-    });
-
-    const saldos = {};
-    state.pessoas.forEach(p => {
-      saldos[p.id] = resumo[p.id].pagou - resumo[p.id].consumiu;
-    });
-
-    return { resumo, saldos, total };
-  }
-
-  function calcularAcertos(saldos){
-    const devedores = [], credores = [];
-    for(const [id, v] of Object.entries(saldos)){
-      if(v < 0) devedores.push({ id, v: -v });
-      else if(v > 0) credores.push({ id, v });
-    }
-    devedores.sort((a,b) => b.v - a.v);
-    credores.sort((a,b) => b.v - a.v);
-
-    const trans = [];
-    let i = 0, j = 0;
-    while(i < devedores.length && j < credores.length){
-      const val = Math.min(devedores[i].v, credores[j].v);
-      if(val > 0){
-        trans.push({ de: devedores[i].id, para: credores[j].id, valor: val });
-      }
-      devedores[i].v -= val;
-      credores[j].v   -= val;
-      if(devedores[i].v === 0) i++;
-      if(credores[j].v   === 0) j++;
-    }
-    return trans;
-  }
-
-  function renderPessoas(){
-    const box = $('#chipsPessoas');
-    box.innerHTML = '';
-    if(!state.pessoas.length){
-      box.innerHTML = '<span class="muted">Ninguém adicionado ainda.</span>';
-      return;
-    }
-    state.pessoas.forEach(p => {
-      const el = document.createElement('span');
-      el.className = 'chip';
-      const nome = document.createElement('span');
-      nome.textContent = p.nome;
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.textContent = '×';
-      btn.title = 'Remover';
-      btn.onclick = () => removerPessoa(p.id);
-      el.append(nome, btn);
-      box.appendChild(el);
-    });
-  }
-
-  function renderFormPessoas(){
-    const sel = $('#itemPagador');
-    const anterior = sel.value;
-    sel.innerHTML = state.pessoas
-      .map(p => `<option value="${p.id}">${esc(p.nome)}</option>`).join('');
-    if(anterior && state.pessoas.some(p => p.id === anterior)) sel.value = anterior;
-
-    $('#listaParticipantes').innerHTML = state.pessoas
-      .map(p => `<label class="check"><input type="checkbox" value="${p.id}" checked> ${esc(p.nome)}</label>`)
-      .join('');
-  }
-
-  function renderItens(){
-    const tbody = $('#tabelaItens tbody');
-    tbody.innerHTML = '';
-    $('#vazioItens').style.display = state.itens.length ? 'none' : 'block';
-
-    state.itens.forEach(item => {
-      const { cotas } = cotasDoItem(item);
-      const vals = Object.values(cotas);
-      const porPessoa = vals.length ? brl(vals[0]) : '—';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${esc(item.nome)}</td>
-        <td class="num">${brl(item.valor)}</td>
-        <td>${item.tipo === 'coletivo' ? 'Coletivo' : 'Individual'}</td>
-        <td>${esc(nomeDe(item.pagadorId))}</td>
-        <td>${Object.keys(cotas).length ? Object.keys(cotas).map(nomeDe).map(esc).join(', ') : '<span class="neg">ninguém</span>'}</td>
-        <td class="num">${porPessoa}</td>
-        <td><button class="x" data-id="${item.id}" title="Remover">×</button></td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-
-  function renderResumo(){
-    const { resumo, saldos, total } = calcular();
-    const tbody = $('#tabelaResumo tbody');
-    tbody.innerHTML = '';
-
-    if(!state.pessoas.length){
-      tbody.innerHTML = '<tr><td colspan="4" class="muted">Adicione pessoas para ver o resumo.</td></tr>';
-    }
-
-    state.pessoas.forEach(p => {
-      const r = resumo[p.id];
-      const s = saldos[p.id];
-      let cls = 'zero', txt = 'quitado';
-      if(s > 0){ cls = 'pos'; txt = 'recebe ' + brl(s); }
-      else if(s < 0){ cls = 'neg'; txt = 'deve ' + brl(-s); }
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${esc(p.nome)}</td>
-        <td class="num">${brl(r.consumiu)}</td>
-        <td class="num">${brl(r.pagou)}</td>
-        <td class="num ${cls}">${txt}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-
-    $('#totalGeral').textContent = brl(total);
-  }
-
-  function renderAcertos(){
-    const { saldos } = calcular();
-    const lista = calcularAcertos(saldos);
-    const box = $('#listaAcertos');
-
-    if(!lista.length){
-      box.innerHTML = '<p class="empty">Nada a acertar — ou faltam dados.</p>';
-      return;
-    }
-    box.innerHTML = lista.map(a => `
-      <div class="acerto">
-        <span><strong>${esc(nomeDe(a.de))}</strong> paga para <strong>${esc(nomeDe(a.para))}</strong></span>
-        <span class="valor">${brl(a.valor)}</span>
+<div class="sheet" id="cat-sheet" aria-hidden="true">
+  <div class="sheet-in">
+    <div class="sheet-head">
+      <b id="sheet-title">Escolher categoria</b>
+      <button type="button" id="cat-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="sheet-item-name" id="cat-item-name"></div>
+    <div class="cat-options" id="cat-options"></div>
+    <div class="sheet-actions">
+      <button type="button" class="add-new" id="cat-new-btn">+ Nova categoria</button>
+    </div>
+    <div class="newcat-form" id="newcat-form">
+      <div class="newcat-row">
+        <input class="input emoji-input" id="newcat-emoji" type="text" maxlength="4" placeholder="🍕" aria-label="Emoji da categoria">
+        <input class="input name-input" id="newcat-name" type="text" maxlength="24" placeholder="Nome da categoria" aria-label="Nome da categoria">
       </div>
-    `).join('');
+      <div class="newcat-actions">
+        <button type="button" class="cancelbtn" id="newcat-cancel">Cancelar</button>
+        <button type="button" class="save" id="newcat-save">Criar categoria</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<nav class="dock" aria-label="Navegação">
+  <div class="in">
+    <div class="totalbar"><span>Total</span><b id="dock-total">R$ 0,00</b></div>
+    <div class="tabs" role="tablist">
+      <button role="tab" aria-selected="true" data-tab="lista"><em>📝</em>Lista</button>
+      <button role="tab" aria-selected="false" data-tab="itens"><em>🛒</em>Carrinho</button>
+      <button role="tab" aria-selected="false" data-tab="resumo"><em>🧾</em>Resumo</button>
+      <button role="tab" aria-selected="false" data-tab="pessoas"><em>👥</em>Pessoas</button>
+    </div>
+  </div>
+</nav>
+
+<script type="module">
+import { initializeApp } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-app.js';
+import { getFirestore, doc, onSnapshot, setDoc } from 'https://www.gstatic.com/firebasejs/12.19.0/firebase-firestore.js';
+
+const firebaseConfig = {
+  apiKey: "AIzaSyA1RF4LWskFdSEIXhm40PBxkkIv_ihBlLc",
+  authDomain: "conedu2026-6a712.firebaseapp.com",
+  projectId: "conedu2026-6a712",
+  storageBucket: "conedu2026-6a712.firebasestorage.app",
+  messagingSenderId: "55965192438",
+  appId: "1:55965192438:web:14c1b7026d16ee4ed09cd7"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const DOC_REF = doc(db, 'conedu2026', 'estado');
+
+// ---------- CATEGORIAS PADRÃO ----------
+const DEFAULT_CATEGORIES = [
+  { id: 'hortifruti', name: 'Hortifruti',     emoji: '🥬' },
+  { id: 'carnes',     name: 'Carnes e frios', emoji: '🥩' },
+  { id: 'laticinios', name: 'Laticínios',     emoji: '🥛' },
+  { id: 'padaria',    name: 'Padaria',        emoji: '🍞' },
+  { id: 'mercearia',  name: 'Mercearia',      emoji: '🥫' },
+  { id: 'doces',      name: 'Doces e snacks', emoji: '🍫' },
+  { id: 'bebida',     name: 'Bebidas',        emoji: '🥤' },
+  { id: 'higiene',    name: 'Higiene',        emoji: '🧴' },
+  { id: 'limpeza',    name: 'Limpeza',        emoji: '🧽' },
+  { id: 'outros',     name: 'Outros',         emoji: '📦' }
+];
+
+const KEYWORDS = {
+  padaria:    ['pao de queijo','pão de queijo','pao de forma','pão de forma','pao frances','pão francês','pao integral','pão integral','pao','pão','baguete','croissant','bolo','torta','sonho','rosca','bisnaguinha','broa','bolinho'],
+  higiene:    ['papel higienico','papel higiênico','sabonete','shampoo','condicionador','creme dental','pasta de dente','escova de dente','desodorante','absorvente','fralda','fraldas','algodao','algodão','cotonete','lenco','lenço','perfume','hidratante','protetor solar','gilete','lamina','lâmina','creme de barbear','fio dental','enxaguante','aparelho de barbear'],
+  laticinios: ['leite condensado','leite em po','leite em pó','leite ninho','creme de leite','leite fermentado','leite','queijo','iogurte','manteiga','margarina','requeijao','requeijão','cream cheese','nata','cottage','ricota','parmesao','parmesão','mussarela','muçarela','provolone','gorgonzola','coalhada','kefir','danone','yakult','chantilly'],
+  carnes:     ['carne moida','carne moída','carne de porco','carne de boi','carne seca','carne','bovina','patinho','alcatra','picanha','contrafile','contrafilé','file','filé','frango','peixe','tilapia','tilápia','salmao','salmão','porco','lombo','costela','linguica','linguiça','salsicha','bacon','presunto','mortadela','salame','peito de peru','blanquet','chester','hamburguer','hambúrguer','nuggets','strogonoff'],
+  hortifruti: ['banana','maca','maçã','laranja','limao','limão','uva','mamao','mamão','melancia','melao','melão','morango','abacaxi','manga','kiwi','pera','goiaba','tangerina','mexerica','ameixa','pessego','pêssego','caju','acerola','maracuja','maracujá','verdura','legume','alface','rucula','rúcula','couve','espinafre','tomate','cebola','alho','batata','cenoura','beterraba','abobrinha','chuchu','pepino','pimentao','pimentão','brocolis','brócolis','couve-flor','repolho','quiabo','vagem','mandioca','inhame','abobora','abóbora','ovo','ovos','salsa','cebolinha','coentro'],
+  doces:      ['bolacha','biscoito','biscoitos','chocolate','bala','chiclete','pirulito','gelatina','pudim','sobremesa','sorvete','acai','açaí','doce de leite','goiabada','nutella','wafer','salgadinho','amendoim','castanha','pipoca','batata chips','batata palha','pacoca','paçoca','brigadeiro','bombom','marshmallow','mousse','brownie','cookie'],
+  mercearia:  ['arroz','feijao','feijão','macarrao','macarrão','espaguete','penne','lasanha','nhoque','lentilha','grao de bico','grão de bico','aveia','farinha','trigo','fuba','fubá','milho','ervilha','atum','sardinha','extrato de tomate','molho de tomate','molho','azeite','oleo','óleo','vinagre','sal','acucar','açúcar','cafe','café','cha','chá','achocolatado','ketchup','mostarda','maionese','oregano','orégano','pimenta','canela','tempero','caldo','azeitona','seleta','cereal','granola','mel','polvilho','amido','sopa','miojo'],
+  bebida:     ['agua','água','suco','refrigerante','refri','coca','coca-cola','guarana','guaraná','pepsi','fanta','sprite','cerveja','vinho','vodka','whisky','energetico','energético','isotonico','isotônico','gatorade','schweppes','tonica','tônica','espumante','champagne','prosecco','licor','gin','rum','tequila','cidra','mate'],
+  limpeza:    ['sabao em po','sabão em pó','sabao liquido','sabão líquido','sabao de coco','sabao','sabão','detergente','amaciante','desinfetante','agua sanitaria','água sanitária','candida','cândida','multiuso','veja','esponja','bucha','vassoura','rodo','pano de chao','pano de chão','saco de lixo','alvejante','limpa vidro','cloro','desengordurante','sapolio','bombril']
+};
+
+const DETECT_ORDER = ['padaria','higiene','laticinios','carnes','hortifruti','doces','mercearia','bebida','limpeza'];
+
+function norm(s){ return String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
+function esc(s){ return String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function brl(c){ return (c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
+function parsePrice(v){
+  v = String(v).replace(/[^\d,.]/g,'');
+  if(!v) return 0;
+  if(v.indexOf(',') > -1){ v = v.replace(/\./g,'').replace(',','.'); }
+  else if((v.match(/\./g)||[]).length > 1){ v = v.replace(/\./g,''); }
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : Math.round(n * 100);
+}
+function uid(prefix){ return (prefix||'id') + '-' + Date.now() + '-' + Math.random().toString(36).slice(2,7); }
+
+function detectCategory(name){
+  const n = norm(name);
+  for(const cat of DETECT_ORDER){
+    if(KEYWORDS[cat] && KEYWORDS[cat].some(k => n.includes(norm(k)))) return cat;
   }
+  return 'outros';
+}
 
-  function atualizar(){
-    salvar();
-    renderPessoas();
-    renderFormPessoas();
-    renderItens();
-    renderResumo();
-    renderAcertos();
-  }
+// ---------- ESTADO ----------
+const defaultNames = ['Eu', 'Pessoa 2', 'Pessoa 3', 'Pessoa 4', 'Pessoa 5'];
 
-  function adicionarPessoa(){
-    const input = $('#nomePessoa');
-    const nome = input.value.trim();
-    if(!nome) return;
-    if(state.pessoas.some(p => p.nome.toLowerCase() === nome.toLowerCase())){
-      alert('Já existe alguém com esse nome.');
-      return;
-    }
-    state.pessoas.push({ id: uid(), nome });
-    input.value = '';
-    input.focus();
-    atualizar();
-  }
+let state = {
+  people: defaultNames.slice(),
+  items: [],
+  shoppingLists: [{ id: uid('list'), name: 'Lista de compras', items: [] }],
+  customCategories: []
+};
 
-  function removerPessoa(id){
-    const p = state.pessoas.find(x => x.id === id);
-    if(!p) return;
-    const temItens = state.itens.some(it => it.pagadorId === id);
-    const msg = temItens
-      ? `Remover ${p.nome}? Os itens que essa pessoa pagou também serão apagados.`
-      : `Remover ${p.nome}?`;
-    if(!confirm(msg)) return;
+const clientId = Math.random().toString(36).slice(2) + Date.now();
+let applyingRemote = false;
+let saveTimeout = null;
+let viewListId = null;
+let forcedCategory = null;
 
-    state.pessoas = state.pessoas.filter(x => x.id !== id);
-    state.itens.forEach(it => {
-      it.participantes = (it.participantes || []).filter(pid => pid !== id);
-    });
-    state.itens = state.itens.filter(it => it.pagadorId !== id);
-    atualizar();
-  }
+const $ = id => document.getElementById(id);
 
-  $('#btnAddPessoa').addEventListener('click', adicionarPessoa);
-  $('#nomePessoa').addEventListener('keydown', e => {
-    if(e.key === 'Enter'){ e.preventDefault(); adicionarPessoa(); }
-  });
+function allCategories(){
+  return DEFAULT_CATEGORIES.concat(state.customCategories || []);
+}
+function getCategory(id){
+  const list = allCategories();
+  return list.find(c => c.id === id) || list.find(c => c.id === 'outros') || list[list.length-1];
+}
+function allIdx(){ return state.people.map((_, i) => i); }
+function split(total, idx){
+  const n = idx.length, base = Math.floor(total / n), rem = total - base * n;
+  const out = {};
+  idx.forEach((p, k) => { out[p] = base + (k < rem ? 1 : 0); });
+  return out;
+}
+function itemTotal(it){ return it.price * it.qty; }
+function currentList(){ return state.shoppingLists.find(x => x.id === viewListId); }
 
-  $$('input[name="tipo"]').forEach(r => {
-    r.addEventListener('change', () => {
-      const tipo = document.querySelector('input[name="tipo"]:checked').value;
-      $('#boxParticipantes').hidden = (tipo !== 'individual');
-    });
-  });
+function toast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('on');
+  clearTimeout(toast.h);
+  toast.h = setTimeout(() => t.classList.remove('on'), 1800);
+}
+function setSync(txt, cls){
+  const el = $('sync');
+  el.textContent = txt;
+  el.className = 'sync on' + (cls ? ' ' + cls : '');
+  clearTimeout(setSync.h);
+  if(cls === 'ok' || cls === 'err') setSync.h = setTimeout(() => el.classList.remove('on'), 1500);
+}
 
-  $('#formItem').addEventListener('submit', e => {
-    e.preventDefault();
-
-    if(!state.pessoas.length){
-      alert('Adicione pelo menos uma pessoa primeiro.');
-      return;
-    }
-    const nome  = $('#itemNome').value.trim();
-    const valor = parseValor($('#itemValor').value);
-    const pagadorId = $('#itemPagador').value;
-    const tipo = document.querySelector('input[name="tipo"]:checked').value;
-
-    if(!nome){ alert('Informe o nome do item.'); return; }
-    if(isNaN(valor) || valor < 0){ alert('Informe um valor válido.'); return; }
-    if(!pagadorId){ alert('Selecione quem pagou.'); return; }
-
-    let participantes = [];
-    if(tipo === 'individual'){
-      participantes = $$('#listaParticipantes input:checked').map(i => i.value);
-      if(!participantes.length){
-        alert('Selecione ao menos uma pessoa que participa deste item.');
-        return;
+function ensureCategories(){
+  const validIds = new Set(allCategories().map(c => c.id));
+  state.shoppingLists.forEach(l => {
+    l.items.forEach(it => {
+      if(!it.category || !validIds.has(it.category)){
+        it.category = detectCategory(it.name);
       }
+    });
+  });
+}
+
+function saveToCloud(){
+  if(applyingRemote) return;
+  clearTimeout(saveTimeout);
+  saveTimeout = setTimeout(async () => {
+    setSync('Salvando…');
+    const payload = {
+      people: state.people.slice(),
+      items: JSON.parse(JSON.stringify(state.items)),
+      shoppingLists: JSON.parse(JSON.stringify(state.shoppingLists)),
+      customCategories: JSON.parse(JSON.stringify(state.customCategories || [])),
+      updatedAt: Date.now(),
+      lastWriter: clientId
+    };
+    try{
+      await setDoc(DOC_REF, payload);
+      setSync('Sincronizado ✓', 'ok');
+    }catch(e){
+      console.error('Erro ao salvar:', e);
+      setSync('Erro ao salvar', 'err');
     }
+  }, 150);
+}
 
-    state.itens.push({ id: uid(), nome, valor, pagadorId, tipo, participantes });
+onSnapshot(DOC_REF, snapshot => {
+  if(!snapshot.exists()){
+    setDoc(DOC_REF, {
+      people: state.people, items: [], shoppingLists: state.shoppingLists,
+      customCategories: [], updatedAt: Date.now(), lastWriter: clientId
+    });
+    return;
+  }
+  const data = snapshot.data();
+  if(!data || !data.people) return;
+  if(data.lastWriter === clientId) return;
 
-    e.target.reset();
-    $('#boxParticipantes').hidden = true;
-    atualizar();
-    $('#itemNome').focus();
+  applyingRemote = true;
+  state.people = data.people.slice();
+  state.items = data.items ? JSON.parse(JSON.stringify(data.items)) : [];
+  state.customCategories = Array.isArray(data.customCategories) ? JSON.parse(JSON.stringify(data.customCategories)) : [];
+
+  if(Array.isArray(data.shoppingLists) && data.shoppingLists.length){
+    state.shoppingLists = JSON.parse(JSON.stringify(data.shoppingLists));
+  }else if(Array.isArray(data.shopping) && data.shopping.length){
+    state.shoppingLists = [{ id: uid('list'), name: 'Lista de compras', items: JSON.parse(JSON.stringify(data.shopping)) }];
+  }else if(!state.shoppingLists || !state.shoppingLists.length){
+    state.shoppingLists = [{ id: uid('list'), name: 'Lista de compras', items: [] }];
+  }
+
+  ensureCategories();
+
+  if(viewListId && !state.shoppingLists.some(l => l.id === viewListId)) viewListId = null;
+  if(form.editing && !state.items.some(x => x.id === form.editing)) resetForm();
+  if(form.fromList && !state.shoppingLists.some(l => l.items.some(x => x.id === form.fromList))) form.fromList = null;
+  form.who = form.who.filter(w => w < state.people.length);
+
+  renderAll();
+  applyingRemote = false;
+  setSync('Sincronizado ✓', 'ok');
+}, err => {
+  console.error('Erro no listener:', err);
+  setSync('Sem conexão', 'err');
+});
+
+// ---------- FORMULÁRIO DO CARRINHO ----------
+let form = { type: 'col', qty: 1, who: allIdx(), editing: null, fromList: null, fromListId: null };
+
+function renderChips(){
+  let h = '';
+  state.people.forEach((n, i) => {
+    const on = form.who.indexOf(i) > -1;
+    h += '<button type="button" class="chip ' + (form.type === 'col' ? 'col' : 'ind') + (on ? ' on' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' + esc(n) + '</button>';
   });
+  $('chips').innerHTML = h;
+  $('who-label').textContent = form.type === 'col' ? 'Dividir entre:' : 'De quem é?';
+  $('todos').style.display = form.type === 'col' ? '' : 'none';
+  $('todos').textContent = form.who.length === state.people.length ? 'Limpar' : 'Todos';
+}
+function renderPreview(){
+  const total = parsePrice($('preco').value) * form.qty;
+  const el = $('preview');
+  if(!total){ el.innerHTML = ''; return; }
+  if(form.type === 'col'){
+    if(!form.who.length){ el.innerHTML = ''; return; }
+    const per = Math.ceil(total / form.who.length);
+    el.innerHTML = 'Total <strong>' + brl(total) + '</strong> · cada um paga <strong>' + brl(per) + '</strong>';
+  }else{
+    el.innerHTML = 'Total <strong>' + brl(total) + '</strong>' + (form.who.length ? ' · ' + esc(state.people[form.who[0]]) : '');
+  }
+}
+function setType(t){
+  form.type = t;
+  $('t-col').classList.toggle('on', t === 'col');
+  $('t-ind').classList.toggle('on', t === 'ind');
+  form.who = t === 'col' ? allIdx() : [];
+  renderChips(); renderPreview();
+}
+function resetForm(){
+  form.editing = null; form.fromList = null; form.fromListId = null; form.qty = 1;
+  $('nome').value = ''; $('preco').value = ''; $('qtd').textContent = '1';
+  $('form').classList.remove('editing');
+  $('add').textContent = 'ADICIONAR ITEM';
+  $('cancel').hidden = true; $('err').textContent = '';
+  setType(form.type);
+}
 
-  $('#tabelaItens tbody').addEventListener('click', e => {
-    const btn = e.target.closest('button.x');
-    if(!btn) return;
-    const id = btn.dataset.id;
-    const item = state.itens.find(i => i.id === id);
-    if(item && confirm(`Remover "${item.nome}"?`)){
-      state.itens = state.itens.filter(i => i.id !== id);
-      atualizar();
+$('t-col').onclick = () => setType('col');
+$('t-ind').onclick = () => setType('ind');
+$('chips').onclick = e => {
+  const b = e.target.closest('.chip'); if(!b) return;
+  const i = +b.dataset.i;
+  if(form.type === 'ind'){ form.who = [i]; }
+  else{
+    const k = form.who.indexOf(i);
+    if(k > -1) form.who.splice(k, 1); else form.who.push(i);
+    form.who.sort((a, b) => a - b);
+  }
+  $('err').textContent = '';
+  renderChips(); renderPreview();
+};
+$('todos').onclick = () => {
+  form.who = form.who.length === state.people.length ? [] : allIdx();
+  renderChips(); renderPreview();
+};
+$('menos').onclick = () => { form.qty = Math.max(1, form.qty - 1); $('qtd').textContent = form.qty; renderPreview(); };
+$('mais').onclick = () => { form.qty = Math.min(99, form.qty + 1); $('qtd').textContent = form.qty; renderPreview(); };
+$('preco').oninput = renderPreview;
+$('nome').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); $('preco').focus(); } });
+$('preco').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addItem(); } });
+
+function addItem(){
+  const price = parsePrice($('preco').value);
+  if(!price){ $('err').textContent = 'Digite o preço do item.'; $('preco').focus(); return; }
+  if(!form.who.length){ $('err').textContent = form.type === 'col' ? 'Escolha pelo menos uma pessoa.' : 'Escolha de quem é o item.'; return; }
+
+  const it = {
+    id: form.editing || Date.now() + Math.random(),
+    name: $('nome').value.trim() || 'Item sem nome',
+    price, qty: form.qty, type: form.type, who: form.who.slice()
+  };
+
+  if(form.editing){
+    state.items = state.items.map(x => x.id === form.editing ? it : x);
+    toast('Item atualizado');
+  }else{
+    state.items.unshift(it);
+    toast('Adicionado: ' + it.name);
+    const key = norm(it.name);
+    state.shoppingLists.forEach(l => {
+      l.items.forEach(x => {
+        if(x.done) return;
+        if((form.fromListId === l.id && x.id === form.fromList) || norm(x.name) === key) x.done = true;
+      });
+    });
+  }
+
+  saveToCloud();
+  resetForm();
+  renderAll();
+  $('nome').focus();
+}
+$('add').onclick = addItem;
+$('cancel').onclick = resetForm;
+
+// ---------- CARRINHO ----------
+function renderList(){
+  const box = $('lista');
+  $('count').textContent = state.items.length ? state.items.length + (state.items.length === 1 ? ' item' : ' itens') : '';
+  if(!state.items.length){
+    box.innerHTML = '<div class="empty">Carrinho vazio.<br>Adicione o primeiro item acima.</div>';
+    return;
+  }
+  box.innerHTML = state.items.map(it => {
+    const tot = itemTotal(it);
+    let sub;
+    if(it.type === 'col'){
+      const all = it.who.length === state.people.length;
+      const per = Math.ceil(tot / it.who.length);
+      sub = '<b class="t-col">Coletivo</b> · ' + (all ? 'todos' : it.who.length + ' pessoas') + ' · ' + brl(per) + ' cada';
+    }else{
+      sub = '<b class="t-ind">Individual</b> · ' + esc(state.people[it.who[0]] || '?');
     }
+    const q = it.qty > 1 ? ' <span style="color:var(--muted);font-weight:500">×' + it.qty + '</span>' : '';
+    return '<div class="item ' + it.type + '"><div class="info"><div class="nm">' + esc(it.name) + q + '</div><div class="sub">' + sub + '</div></div><div class="val">' + brl(tot) + '</div><div class="acts"><button class="icon" data-edit="' + it.id + '" aria-label="Editar ' + esc(it.name) + '">✏️</button><button class="icon" data-del="' + it.id + '" aria-label="Remover ' + esc(it.name) + '">🗑️</button></div></div>';
+  }).join('');
+}
+$('lista').onclick = e => {
+  const d = e.target.closest('[data-del]'), ed = e.target.closest('[data-edit]');
+  if(d){
+    const id = d.dataset.del;
+    const it = state.items.filter(x => String(x.id) === id)[0];
+    state.items = state.items.filter(x => String(x.id) !== id);
+    saveToCloud(); renderAll(); toast('Removido: ' + (it ? it.name : 'item'));
+  }else if(ed){
+    const id2 = ed.dataset.edit;
+    const it2 = state.items.filter(x => String(x.id) === id2)[0];
+    if(!it2) return;
+    form.editing = it2.id; form.type = it2.type; form.qty = it2.qty; form.who = it2.who.slice();
+    $('nome').value = it2.name;
+    $('preco').value = (it2.price / 100).toFixed(2).replace('.', ',');
+    $('qtd').textContent = it2.qty;
+    $('t-col').classList.toggle('on', it2.type === 'col');
+    $('t-ind').classList.toggle('on', it2.type === 'ind');
+    $('form').classList.add('editing');
+    $('add').textContent = 'SALVAR ALTERAÇÃO';
+    $('cancel').hidden = false;
+    renderChips(); renderPreview();
+    goTab('itens');
+    setTimeout(() => $('nome').focus(), 100);
+  }
+};
+
+// ---------- RESUMO ----------
+function compute(){
+  const res = state.people.map(() => ({ col: 0, ind: 0, lines: [] }));
+  let total = 0;
+  state.items.forEach(it => {
+    const tot = itemTotal(it); total += tot;
+    const parts = split(tot, it.who);
+    it.who.forEach(p => {
+      if(!res[p]) return;
+      if(it.type === 'col') res[p].col += parts[p]; else res[p].ind += parts[p];
+      res[p].lines.push({ name: it.name + (it.qty > 1 ? ' ×' + it.qty : ''), v: parts[p], type: it.type });
+    });
+  });
+  return { res, total };
+}
+function renderSummary(){
+  const c = compute();
+  $('g-total').textContent = brl(c.total);
+  const nc = state.items.filter(i => i.type === 'col').length;
+  $('g-sub').textContent = state.items.length + ' itens · ' + nc + ' coletivos';
+  const openIds = [];
+  document.querySelectorAll('#cards details[open]').forEach(d => openIds.push(d.dataset.p));
+  $('cards').innerHTML = state.people.map((n, i) => {
+    const r = c.res[i], t = r.col + r.ind;
+    const lines = r.lines.length ? r.lines.map(l =>
+      '<div class="ln"><span>' + esc(l.name) + '<span class="tag ' + (l.type === 'col' ? 'c' : 'i') + '">' + (l.type === 'col' ? 'coletivo' : 'individual') + '</span></span><span>' + brl(l.v) + '</span></div>'
+    ).join('') : '<div class="ln"><span style="color:var(--muted)">Nenhum item ainda</span></div>';
+    return '<details class="card" data-p="' + i + '"' + (openIds.indexOf(String(i)) > -1 ? ' open' : '') + '><summary><div class="pn">' + esc(n) + '<small>coletivo ' + brl(r.col) + ' · individual ' + brl(r.ind) + '</small></div><div class="tot">' + brl(t) + '</div><span class="chev">›</span></summary><div class="body">' + lines + '</div></details>';
+  }).join('');
+  $('dock-total').textContent = brl(c.total);
+}
+$('copiar').onclick = () => {
+  const c = compute();
+  let txt = '🛒 CONEDU 2026 - SUPERMERCADO\nTotal: ' + brl(c.total) + '\n\n';
+  state.people.forEach((n, i) => {
+    const r = c.res[i];
+    txt += n + ': ' + brl(r.col + r.ind) + ' (coletivo ' + brl(r.col) + ' + individual ' + brl(r.ind) + ')\n';
+  });
+  const done = () => toast('Resumo copiado!');
+  const fallback = () => {
+    try{
+      const ta = document.createElement('textarea');
+      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
+      document.body.appendChild(ta); ta.select(); document.execCommand('copy');
+      document.body.removeChild(ta); done();
+    }catch(e){ toast('Não foi possível copiar'); }
+  };
+  try{
+    if(navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback);
+    else fallback();
+  }catch(e){ fallback(); }
+};
+
+// ---------- PESSOAS ----------
+function renderPeople(){
+  const active = document.activeElement;
+  const isEditing = active && active.tagName === 'INPUT' && active.dataset.n !== undefined;
+  if(isEditing) return;
+  $('people').innerHTML = state.people.map((n, i) =>
+    '<div class="p"><i>' + (i + 1) + '</i><input class="input" data-n="' + i + '" value="' + esc(n) + '" maxlength="20" aria-label="Nome da pessoa ' + (i + 1) + '"><button class="icon" data-rmp="' + i + '" aria-label="Remover ' + esc(n) + '" style="flex:0 0 auto;width:44px;height:44px;font-size:20px">✕</button></div>'
+  ).join('');
+}
+$('people').addEventListener('input', e => {
+  const i = e.target.dataset.n; if(i === undefined) return;
+  state.people[+i] = e.target.value;
+  saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
+});
+$('people').addEventListener('focusout', e => {
+  const i = e.target.dataset.n; if(i === undefined) return;
+  const trimmed = e.target.value.trim();
+  state.people[+i] = trimmed || ('Pessoa ' + (+i + 1));
+  e.target.value = state.people[+i];
+  saveToCloud(); renderChips(); renderList(); renderSummary(); renderPreview();
+});
+$('people').addEventListener('click', e => {
+  const b = e.target.closest('[data-rmp]'); if(!b) return;
+  if(state.people.length <= 2){ toast('Mínimo de 2 pessoas'); return; }
+  const i = +b.dataset.rmp;
+  state.people.splice(i, 1);
+  state.items = state.items.map(it => {
+    it.who = it.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
+    return it;
+  }).filter(it => it.who.length);
+  form.who = form.who.filter(w => w !== i).map(w => w > i ? w - 1 : w);
+  if(form.editing && form.who.length === 0 && form.type === 'ind') resetForm();
+  saveToCloud(); renderAll(); renderPeople();
+  toast('Pessoa removida');
+});
+$('add-pessoa').onclick = () => {
+  if(state.people.length >= 20){ toast('Máximo de 20 pessoas'); return; }
+  const newIdx = state.people.length;
+  state.people.push('Pessoa ' + (newIdx + 1));
+  if(form.type === 'col') form.who.push(newIdx);
+  saveToCloud(); renderAll(); renderPeople();
+  toast('Pessoa adicionada');
+};
+
+let armed = false;
+$('limpar').onclick = () => {
+  const b = $('limpar');
+  if(!armed){ armed = true; b.textContent = 'Toque de novo para apagar tudo'; setTimeout(() => { armed = false; b.textContent = 'Limpar todos os itens'; }, 3500); return; }
+  state.items = []; saveToCloud(); armed = false; b.textContent = 'Limpar todos os itens'; renderAll(); toast('Carrinho limpo');
+};
+
+// ---------- ABAS ----------
+function goTab(t){
+  document.querySelectorAll('.tabs button').forEach(x => x.setAttribute('aria-selected', x.dataset.tab === t));
+  document.querySelectorAll('.panel').forEach(p => p.classList.toggle('on', p.id === 'p-' + t));
+  window.scrollTo(0, 0);
+}
+document.querySelector('.tabs').onclick = e => {
+  const b = e.target.closest('button'); if(!b) return;
+  goTab(b.dataset.tab);
+};
+
+// ---------- LISTAS DE COMPRAS ----------
+function showCardsView(){
+  viewListId = null;
+  $('list-detail').style.display = 'none';
+  $('lists-view').style.display = '';
+  renderShoppingCards();
+}
+function showListView(id){
+  viewListId = id;
+  $('lists-view').style.display = 'none';
+  $('list-detail').style.display = '';
+  renderShoppingDetail();
+}
+function renderShoppingCards(){
+  const box = $('lists-cards');
+  if(!state.shoppingLists.length){
+    box.innerHTML = '<div class="empty">Nenhuma lista ainda.<br>Crie uma abaixo.</div>';
+    return;
+  }
+  box.innerHTML = state.shoppingLists.map(l => {
+    const total = l.items.length;
+    const done = l.items.filter(x => x.done).length;
+    const pct = total ? Math.round(done / total * 100) : 0;
+    const sub = total ? done + ' de ' + total + ' comprados' : 'Lista vazia';
+    return '<button type="button" class="list-card" data-list="' + l.id + '">' +
+      '<div class="lc-info">' +
+        '<div class="lc-title">' + esc(l.name) + '</div>' +
+        '<div class="lc-sub">' + sub + '</div>' +
+        '<div class="lc-bar"><i style="width:' + pct + '%"></i></div>' +
+      '</div>' +
+      '<span class="lc-chev">›</span>' +
+    '</button>';
+  }).join('');
+}
+
+function shRow(x){
+  const cid = x.category || detectCategory(x.name);
+  const cat = getCategory(cid);
+  return '<div class="sh' + (x.done ? ' done' : '') + '">' +
+    '<div class="sh-main">' +
+      '<button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
+      '<button type="button" class="sh-cat" data-pick-cat="' + x.id + '"><span class="cat-em">' + cat.emoji + '</span>' + esc(cat.name) + ' ▾</button>' +
+    '</div>' +
+    (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
+    '<button type="button" class="icon shdel" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + '">🗑️</button>' +
+  '</div>';
+}
+
+function renderShoppingDetail(){
+  const l = currentList();
+  if(!l){ showCardsView(); return; }
+
+  const titleEl = $('list-title');
+  if(document.activeElement !== titleEl) titleEl.value = l.name;
+
+  const total = l.items.length;
+  const doneCount = l.items.filter(x => x.done).length;
+  $('sh-count').textContent = total ? doneCount + ' de ' + total + ' comprados' : 'Sua lista está vazia';
+  $('sh-bar').style.width = total ? Math.round(doneCount / total * 100) + '%' : '0';
+  $('sh-clear').hidden = !doneCount;
+
+  renderCatPicker();
+
+  if(!total){
+    $('sh-list').innerHTML = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
+    return;
+  }
+
+  const pending = l.items.filter(x => !x.done);
+  const done = l.items.filter(x => x.done);
+
+  const allCats = allCategories();
+  const groups = {};
+  allCats.forEach(c => groups[c.id] = []);
+  pending.forEach(x => {
+    const cid = x.category || detectCategory(x.name);
+    if(!groups[cid]) groups[cid] = [];
+    groups[cid].push(x);
   });
 
-  $('#btnLimpar').addEventListener('click', () => {
-    if(!confirm('Apagar todas as pessoas e itens? Isso não pode ser desfeito.')) return;
-    state = { pessoas: [], itens: [] };
-    atualizar();
+  let h = '';
+  let anyPending = false;
+  allCats.forEach(cat => {
+    const list = groups[cat.id];
+    if(!list || !list.length) return;
+    anyPending = true;
+    h += '<div class="cat-head"><span class="cat-em">' + cat.emoji + '</span><span class="cat-name">' + esc(cat.name) + '</span><span class="cat-count">' + list.length + '</span></div>';
+    h += list.map(shRow).join('');
   });
+  if(!anyPending) h += '<div class="empty">Tudo comprado! 🎉</div>';
 
-  carregar();
-  atualizar();
-})();
+  if(done.length){
+    h += '<div class="sub-h">Já comprados</div>';
+    h += done.map(shRow).join('');
+  }
+
+  $('sh-list').innerHTML = h;
+}
+
+function renderCatPicker(){
+  const box = $('sh-cat-picker');
+  if(!box) return;
+  const all = allCategories();
+  let h = '<button type="button" class="cat-chip auto' + (forcedCategory === null ? ' on' : '') + '" data-cat="auto">✨ Auto</button>';
+  h += all.map(c =>
+    '<button type="button" class="cat-chip' + (forcedCategory === c.id ? ' on' : '') + '" data-cat="' + c.id + '"><span>' + c.emoji + '</span>' + esc(c.name) + '</button>'
+  ).join('');
+  box.innerHTML = h;
+}
+$('sh-cat-picker').onclick = e => {
+  const b = e.target.closest('[data-cat]'); if(!b) return;
+  const v = b.dataset.cat;
+  forcedCategory = (v === 'auto') ? null : v;
+  renderCatPicker();
+};
+
+function renderShoppingArea(){
+  if(viewListId){
+    if(!state.shoppingLists.some(l => l.id === viewListId)){ showCardsView(); return; }
+    $('lists-view').style.display = 'none';
+    $('list-detail').style.display = '';
+    renderShoppingDetail();
+  }else{
+    $('list-detail').style.display = 'none';
+    $('lists-view').style.display = '';
+    renderShoppingCards();
+  }
+}
+
+$('lists-cards').onclick = e => {
+  const b = e.target.closest('.list-card'); if(!b) return;
+  showListView(b.dataset.list);
+};
+$('add-list').onclick = () => {
+  const base = 'Nova lista';
+  let finalName = base, i = 2;
+  while(state.shoppingLists.some(l => l.name === finalName)){ finalName = base + ' ' + i; i++; }
+  const id = uid('list');
+  state.shoppingLists.push({ id, name: finalName, items: [] });
+  saveToCloud();
+  showListView(id);
+  setTimeout(() => { const el = $('list-title'); el.focus(); el.select(); }, 100);
+};
+$('back-lists').onclick = () => showCardsView();
+$('list-title').addEventListener('input', e => {
+  const l = currentList(); if(!l) return;
+  l.name = e.target.value;
+  saveToCloud();
+});
+$('list-title').addEventListener('focusout', e => {
+  const l = currentList(); if(!l) return;
+  const t = e.target.value.trim() || 'Lista sem nome';
+  l.name = t; e.target.value = t;
+  saveToCloud(); renderShoppingCards();
+});
+let listArmed = null;
+$('del-list').onclick = () => {
+  if(!viewListId) return;
+  if(listArmed !== viewListId){
+    listArmed = viewListId;
+    toast('Toque de novo para excluir a lista');
+    setTimeout(() => { if(listArmed === viewListId) listArmed = null; }, 3000);
+    return;
+  }
+  state.shoppingLists = state.shoppingLists.filter(x => x.id !== viewListId);
+  listArmed = null;
+  viewListId = null;
+  saveToCloud(); renderAll();
+  toast('Lista excluída');
+};
+
+function addShopping(){
+  const l = currentList(); if(!l) return;
+  const inp = $('sh-nome');
+  const parts = inp.value.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+  if(!parts.length){ inp.focus(); return; }
+  let added = 0;
+  parts.forEach(n => {
+    const k = norm(n);
+    const dup = l.items.some(x => !x.done && norm(x.name) === k);
+    if(dup) return;
+    const name = n.charAt(0).toUpperCase() + n.slice(1);
+    l.items.push({
+      id: Date.now() + Math.random(),
+      name,
+      category: forcedCategory || detectCategory(name),
+      done: false
+    });
+    added++;
+  });
+  inp.value = '';
+  saveToCloud(); renderShoppingArea(); inp.focus();
+  toast(added ? (added === 1 ? 'Adicionado à lista' : added + ' itens adicionados') : 'Já está na lista');
+}
+$('sh-add').onclick = addShopping;
+$('sh-nome').addEventListener('keydown', e => { if(e.key === 'Enter'){ e.preventDefault(); addShopping(); } });
+
+$('sh-list').onclick = e => {
+  const l = currentList(); if(!l) return;
+  const t = e.target.closest('[data-tog]');
+  const p = e.target.closest('[data-price]');
+  const d = e.target.closest('[data-shdel]');
+  const pc = e.target.closest('[data-pick-cat]');
+
+  function find(id){ return l.items.filter(x => String(x.id) === id)[0]; }
+
+  if(pc){
+    const it = find(pc.dataset.pickCat); if(!it) return;
+    openCatSheet(it.id);
+    return;
+  }
+  if(t){
+    const x = find(t.dataset.tog);
+    if(x){ x.done = !x.done; saveToCloud(); renderShoppingArea(); }
+  }else if(d){
+    l.items = l.items.filter(x => String(x.id) !== d.dataset.shdel);
+    saveToCloud(); renderShoppingArea();
+  }else if(p){
+    const it = find(p.dataset.price); if(!it) return;
+    if(form.editing) resetForm();
+    form.fromList = it.id;
+    form.fromListId = l.id;
+    $('nome').value = it.name;
+    $('preco').value = '';
+    goTab('itens');
+    setTimeout(() => $('preco').focus(), 100);
+  }
+};
+$('sh-clear').onclick = () => {
+  const l = currentList(); if(!l) return;
+  l.items = l.items.filter(x => !x.done);
+  saveToCloud(); renderShoppingArea();
+};
+
+// ---------- BOTTOM SHEET ----------
+let sheetItemId = null;
+
+function openCatSheet(itemId){
+  const l = currentList(); if(!l) return;
+  const it = l.items.find(x => String(x.id) === String(itemId));
+  if(!it) return;
+  sheetItemId = it.id;
+  $('cat-item-name').textContent = it.name;
+  $('sheet-title').textContent = 'Categoria de "' + it.name + '"';
+  renderCatOptions(it.category || detectCategory(it.name));
+  $('newcat-form').classList.remove('on');
+  $('newcat-emoji').value = '';
+  $('newcat-name').value = '';
+  $('cat-sheet').classList.add('on');
+  $('cat-sheet').setAttribute('aria-hidden','false');
+}
+function closeCatSheet(){
+  $('cat-sheet').classList.remove('on');
+  $('cat-sheet').setAttribute('aria-hidden','true');
+  sheetItemId = null;
+}
+function renderCatOptions(current){
+  $('cat-options').innerHTML = allCategories().map(c =>
+    '<button type="button" class="cat-option' + (c.id === current ? ' on' : '') + '" data-choose="' + c.id + '">' +
+      '<span class="em">' + c.emoji + '</span>' +
+      '<span>' + esc(c.name) + '</span>' +
+    '</button>'
+  ).join('');
+}
+$('cat-options').onclick = e => {
+  const b = e.target.closest('[data-choose]'); if(!b) return;
+  const l = currentList(); if(!l || !sheetItemId){ closeCatSheet(); return; }
+  const it = l.items.find(x => String(x.id) === String(sheetItemId));
+  if(!it){ closeCatSheet(); return; }
+  it.category = b.dataset.choose;
+  saveToCloud();
+  closeCatSheet();
+  renderShoppingArea();
+  const cat = getCategory(it.category);
+  toast(cat.emoji + ' ' + cat.name);
+};
+$('cat-close').onclick = closeCatSheet;
+$('cat-sheet').addEventListener('click', e => {
+  if(e.target === $('cat-sheet')) closeCatSheet();
+});
+
+$('cat-new-btn').onclick = () => {
+  const f = $('newcat-form');
+  f.classList.toggle('on');
+  if(f.classList.contains('on')) $('newcat-name').focus();
+};
+$('newcat-cancel').onclick = () => {
+  $('newcat-form').classList.remove('on');
+};
+$('newcat-save').onclick = () => {
+  const emoji = $('newcat-emoji').value.trim() || '🏷️';
+  const name = $('newcat-name').value.trim();
+  if(!name){ toast('Dê um nome para a categoria'); $('newcat-name').focus(); return; }
+
+  const existing = allCategories().find(c => norm(c.name) === norm(name));
+  let catId;
+  if(existing){
+    catId = existing.id;
+  }else{
+    catId = uid('cat');
+    state.customCategories.push({ id: catId, name, emoji });
+  }
+
+  const l = currentList();
+  if(l && sheetItemId){
+    const it = l.items.find(x => String(x.id) === String(sheetItemId));
+    if(it) it.category = catId;
+  }
+
+  saveToCloud();
+  renderShoppingArea();
+  closeCatSheet();
+  toast('Categoria "' + name + '" criada');
+};
+
+let pressTimer = null;
+let pressTarget = null;
+$('sh-list').addEventListener('touchstart', e => {
+  const tog = e.target.closest('[data-tog]');
+  if(!tog) return;
+  pressTarget = tog.dataset.tog;
+  clearTimeout(pressTimer);
+  pressTimer = setTimeout(() => { if(pressTarget) openCatSheet(pressTarget); }, 550);
+}, {passive:true});
+$('sh-list').addEventListener('touchend', () => { clearTimeout(pressTimer); pressTarget = null; });
+$('sh-list').addEventListener('touchmove', () => { clearTimeout(pressTimer); pressTarget = null; });
+$('sh-list').addEventListener('touchcancel', () => { clearTimeout(pressTimer); pressTarget = null; });
+$('sh-list').addEventListener('contextmenu', e => {
+  const tog = e.target.closest('[data-tog]');
+  if(!tog) return;
+  e.preventDefault();
+  openCatSheet(tog.dataset.tog);
+});
+
+// ---------- RENDER GERAL ----------
+function renderAll(){
+  renderList();
+  renderSummary();
+  renderChips();
+  renderPreview();
+  renderShoppingArea();
+  renderPeople();
+}
+
+renderPeople();
+renderAll();
+setSync('Conectando…');
 </script>
 </body>
 </html>
