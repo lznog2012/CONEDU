@@ -46,7 +46,13 @@ button{cursor:pointer;border:0;background:none}
 /* topo */
 .top{background:var(--yellow);color:var(--on-yellow);padding:14px 16px 12px;border-bottom:4px solid var(--on-yellow)}
 .top h1{margin:0;font-family:var(--head);font-weight:800;font-size:30px;line-height:1;letter-spacing:.2px}
-.top p{margin:4px 0 0;font-size:14px;font-weight:500;opacity:.85}
+.top .sub{display:flex;justify-content:space-between;align-items:center;gap:8px;margin-top:6px}
+.top p{margin:0;font-size:14px;font-weight:500;opacity:.85}
+.status{flex:0 0 auto;display:inline-flex;align-items:center;font-size:12px;font-weight:700;padding:4px 10px;border-radius:99px;background:#13203B;color:#fff}
+.status::before{content:"";width:8px;height:8px;border-radius:50%;margin-right:6px;background:#9AA7C4}
+.status.on::before{background:#5ED39A}
+.status.conn::before{background:#FFD23F}
+.status.off::before,.status.err::before{background:#FF7B86}
 
 .panel{display:none;padding:14px 14px 0}
 .panel.on{display:block}
@@ -140,6 +146,9 @@ button{cursor:pointer;border:0;background:none}
 
 /* pessoas */
 .people .p{display:flex;gap:10px;align-items:center;margin-bottom:10px}
+.people .input{flex:1;width:auto;min-width:0}
+.me{flex:0 0 auto;height:52px;padding:0 12px;border-radius:10px;border:2px solid var(--line);font-weight:600;font-size:14px;background:var(--surface)}
+.me.on{background:var(--ink);color:var(--surface);border-color:var(--ink)}
 .people .p i{flex:0 0 36px;height:36px;border-radius:50%;background:var(--yellow);color:var(--on-yellow);display:grid;place-items:center;font-style:normal;font-family:var(--head);font-weight:800;font-size:20px}
 .hint{color:var(--muted);font-size:14px;margin:0 2px 14px}
 
@@ -181,7 +190,7 @@ button{cursor:pointer;border:0;background:none}
 <div class="app">
   <header class="top">
     <h1>CONEDU 2026 - SUPERMERCADO</h1>
-    <p>Adicione o item, escolha quem paga, pronto.</p>
+    <div class="sub"><p>Adicione o item, escolha quem paga, pronto.</p><span class="status conn" id="status">Conectando…</span></div>
   </header>
 
   <!-- LISTA -->
@@ -248,9 +257,10 @@ button{cursor:pointer;border:0;background:none}
 
   <!-- PESSOAS -->
   <section class="panel" id="p-pessoas" role="tabpanel">
-    <p class="hint">Toque no nome para editar. São 5 pessoas no grupo.</p>
+    <p class="hint">Os nomes valem para todo mundo do grupo. Toque em <b>Sou eu</b> no seu nome: isso vale só para este celular e já deixa você marcado nos itens individuais.</p>
     <div class="people" id="people"></div>
-    <button class="btn danger" id="limpar">Limpar todos os itens</button>
+    <button class="btn danger" id="limpar">Limpar o carrinho (para todos)</button>
+    <p class="hint" id="sync-info" style="margin-top:6px"></p>
   </section>
 </div>
 
@@ -269,16 +279,9 @@ button{cursor:pointer;border:0;background:none}
 </nav>
 
 <script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-import {
-  getFirestore, doc, collection, query, orderBy, onSnapshot,
-  setDoc, addDoc, deleteDoc, updateDoc, writeBatch, getDocs
-} from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-
-/* ============================================================
-   FIREBASE
-   ============================================================ */
-const firebaseConfig = {
+/* ================= CONFIGURAÇÃO ================= */
+// Firebase Firestore (o mesmo projeto que você já tem configurado).
+const FIREBASE_CONFIG = {
   apiKey: "AIzaSyA1RF4LWskFdSEIXhm40PBxkkIv_ihBlLc",
   authDomain: "conedu2026-6a712.firebaseapp.com",
   projectId: "conedu2026-6a712",
@@ -287,505 +290,490 @@ const firebaseConfig = {
   appId: "1:55965192438:web:14c1b7026d16ee4ed09cd7",
   measurementId: "G-BLJKJTYPYS"
 };
+// Nome da "sala". Quem usa o mesmo nome vê a mesma lista.
+// Dá para trocar sem editar o código: seusite.vercel.app/?sala=outronome
+const SALA_PADRAO = "conedu2026";
+/* ================================================= */
 
-const app = initializeApp(firebaseConfig);
-const db  = getFirestore(app);
+const FB_VERSION = "10.12.2";
+const SALA = (new URLSearchParams(location.search).get("sala") || SALA_PADRAO).replace(/[^\w-]/g, "").slice(0, 40) || SALA_PADRAO;
+const LOCAL_KEY = "conedu2026-local-" + SALA;
+const ME_KEY = "conedu2026-eu-" + SALA;
+const N = 5;
+const defaultNames = ["Pessoa 1", "Pessoa 2", "Pessoa 3", "Pessoa 4", "Pessoa 5"];
+const $ = id => document.getElementById(id);
 
-// Um doc de config (nomes das pessoas + lista de compras) e
-// uma coleção de itens do carrinho. Tudo compartilhado no grupo.
-const CONFIG_REF = doc(db, 'mercado_config', 'config');
-const ITENS_COL  = collection(db, 'mercado_itens');
-
-/* ============================================================
-   ESTADO
-   ============================================================ */
-var defaultNames = ['Eu','Pessoa 2','Pessoa 3','Pessoa 4','Pessoa 5'];
-var state = { people: defaultNames.slice(), items: [], shopping: [] };
-var form  = { type:'col', qty:1, who:allIdx(), editing:null, fromList:null };
-
-var $ = function(id){ return document.getElementById(id) };
-
-function allIdx(){ return state.people.map(function(_,i){ return i; }); }
-function norm(s){ return String(s).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,''); }
-function esc(s){ return String(s).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
-function brl(c){ return (c/100).toLocaleString('pt-BR',{style:'currency',currency:'BRL'}); }
-
-function parsePrice(v){
-  v = String(v).replace(/[^\d,.]/g,'');
-  if(!v) return 0;
-  if(v.indexOf(',') > -1){ v = v.replace(/\./g,'').replace(',','.'); }
-  else if((v.match(/\./g)||[]).length > 1){ v = v.replace(/\./g,''); }
-  var n = parseFloat(v);
-  return isNaN(n) ? 0 : Math.round(n*100);
+/* ---------- utilidades ---------- */
+const allIdx = () => defaultNames.map((_, i) => i);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const esc = s => String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const norm = s => String(s).trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+const brl = c => (c / 100).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+function parsePrice(v) {
+  v = String(v).replace(/[^\d,.]/g, "");
+  if (!v) return 0;
+  if (v.indexOf(",") > -1) v = v.replace(/\./g, "").replace(",", ".");
+  else if ((v.match(/\./g) || []).length > 1) v = v.replace(/\./g, "");
+  const n = parseFloat(v);
+  return isNaN(n) ? 0 : Math.round(n * 100);
 }
-
-function toast(msg){
-  var t = $('toast'); t.textContent = msg; t.classList.add('on');
-  clearTimeout(toast.h); toast.h = setTimeout(function(){ t.classList.remove('on'); }, 1800);
+let toastTimer;
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.classList.add("on");
+  clearTimeout(toastTimer); toastTimer = setTimeout(() => t.classList.remove("on"), 2000);
 }
-
-/* ============================================================
-   CÁLCULO — ROUND EXATO POR PESSOA
-   R$ 25,00 ÷ 3 = R$ 8,33 para cada um
-   ============================================================ */
-function split(total, idx){
-  if(!idx.length) return {};
-  var cota = Math.round(total / idx.length);
-  var out = {};
-  idx.forEach(function(p){ out[p] = cota; });
+/* ---- CÁLCULO EXATO: cada um paga o mesmo valor arredondado ---- */
+function split(total, idx) {
+  const n = idx.length; if (!n) return {};
+  const cota = Math.round(total / n);
+  const out = {};
+  idx.forEach(p => { out[p] = cota; });
   return out;
 }
-function itemTotal(it){ return it.price * it.qty; }
+const itemTotal = it => it.price * it.qty;
 
-/* ============================================================
-   ESCRITAS NO FIRESTORE
-   ============================================================ */
-function saveConfig(){
-  setDoc(CONFIG_REF, { people: state.people, shopping: state.shopping }, { merge: true })
-    .catch(function(e){ console.error('saveConfig', e); toast('Erro ao salvar. Verifique sua conexão.'); });
+/* ---------- estado ---------- */
+let state = { people: defaultNames.slice(), items: [], shopping: [] };
+let mode = "pending"; // local | pending | remote | failed
+let me = null;
+try { const m = localStorage.getItem(ME_KEY); if (m !== null && m !== "" && +m >= 0 && +m < N) me = +m; } catch (e) {}
+
+/* ---------- armazenamento (local ou Firestore) ---------- */
+let fsx = null; // módulo Firestore + refs
+
+function ready() {
+  if (mode === "local" || mode === "remote") return true;
+  toast(mode === "pending" ? "Conectando… tente de novo em instantes" : "Sem conexão com o servidor");
+  return false;
 }
-var peopleTimer;
-function savePeopleSoon(){
-  clearTimeout(peopleTimer);
-  peopleTimer = setTimeout(saveConfig, 500);
+function commitLocal() {
+  try { localStorage.setItem(LOCAL_KEY, JSON.stringify(state)); } catch (e) {}
+  renderAll();
+}
+function upsert(arr, o) {
+  const i = arr.findIndex(x => String(x.id) === String(o.id));
+  if (i > -1) arr[i] = o; else arr.push(o);
+}
+function sortState() {
+  state.items.sort((a, b) => (b.ts || 0) - (a.ts || 0));
+  state.shopping.sort((a, b) => (a.ts || 0) - (b.ts || 0));
+}
+const fail = e => {
+  console.error(e);
+  toast("Não foi possível salvar. Confira as regras do Firestore.");
+};
+
+const store = {
+  putItem(it) {
+    if (!ready()) return false;
+    if (mode === "local") { upsert(state.items, it); sortState(); commitLocal(); }
+    else {
+      fsx.setDoc(fsx.doc(fsx.db, "salas", SALA, "itens", String(it.id)), {
+        name: it.name, price: it.price, qty: it.qty,
+        type: it.type, who: it.who, ts: it.ts
+      }).catch(fail);
+    }
+    return true;
+  },
+  delItem(id) {
+    if (!ready()) return;
+    if (mode === "local") { state.items = state.items.filter(x => String(x.id) !== String(id)); commitLocal(); }
+    else fsx.deleteDoc(fsx.doc(fsx.db, "salas", SALA, "itens", String(id))).catch(fail);
+  },
+  clearItems() {
+    if (!ready()) return;
+    if (mode === "local") { state.items = []; commitLocal(); }
+    else {
+      fsx.getDocs(fsx.collection(fsx.db, "salas", SALA, "itens")).then(snap => {
+        const batch = fsx.writeBatch(fsx.db);
+        snap.forEach(d => batch.delete(d.ref));
+        return batch.commit();
+      }).catch(fail);
+    }
+  },
+  putShop(x) {
+    if (!ready()) return;
+    if (mode === "local") { upsert(state.shopping, x); sortState(); commitLocal(); }
+    else {
+      fsx.setDoc(fsx.doc(fsx.db, "salas", SALA, "shopping", String(x.id)), {
+        name: x.name, done: !!x.done, ts: x.ts
+      }).catch(fail);
+    }
+  },
+  delShop(id) {
+    if (!ready()) return;
+    if (mode === "local") { state.shopping = state.shopping.filter(x => String(x.id) !== String(id)); commitLocal(); }
+    else fsx.deleteDoc(fsx.doc(fsx.db, "salas", SALA, "shopping", String(id))).catch(fail);
+  },
+  clearShopDone() {
+    if (!ready()) return;
+    if (mode === "local") { state.shopping = state.shopping.filter(x => !x.done); commitLocal(); }
+    else {
+      const done = state.shopping.filter(x => x.done);
+      if (!done.length) return;
+      const batch = fsx.writeBatch(fsx.db);
+      done.forEach(x => batch.delete(fsx.doc(fsx.db, "salas", SALA, "shopping", String(x.id))));
+      batch.commit().catch(fail);
+    }
+  },
+  putName(i, v) {
+    if (!ready()) return;
+    if (mode === "local") { state.people[i] = v || defaultNames[i]; commitLocal(); }
+    else {
+      const arr = state.people.slice();
+      arr[i] = v || defaultNames[i];
+      fsx.setDoc(fsx.doc(fsx.db, "salas", SALA), { people: arr }, { merge: true }).catch(fail);
+    }
+  }
+};
+
+/* ---------- status da conexão ---------- */
+let connected = false, everConnected = false, hadError = false;
+function setStatus(k) {
+  const txt = { local: "Modo local", conn: "Conectando…", on: "Ao vivo", off: "Sem conexão", err: "Sem permissão" }[k];
+  const el = $("status"); el.className = "status " + k; el.textContent = txt;
+  const info = {
+    local: "Modo local: a lista fica só neste celular. Configure o Firebase para compartilhar com o grupo.",
+    conn: "Conectando ao servidor…",
+    on: "Sincronizado ao vivo na sala “" + SALA + "”. Quem abrir este mesmo link vê e edita a mesma lista.",
+    off: "Sem conexão. O que você fizer é guardado e enviado quando a internet voltar.",
+    err: "O servidor recusou o acesso. Confira as regras do Firestore (veja o LEIA-ME)."
+  }[k];
+  $("sync-info").textContent = info;
+}
+function refreshStatus() {
+  if (hadError) return setStatus("err");
+  if (connected) return setStatus("on");
+  setStatus(everConnected ? "off" : "conn");
 }
 
-/* ============================================================
-   FORMULÁRIO
-   ============================================================ */
-function renderChips(){
-  var h = '';
-  state.people.forEach(function(n,i){
-    var on = form.who.indexOf(i) > -1;
-    h += '<button type="button" class="chip ' + (form.type==='col'?'col':'ind') + (on?' on':'') + '" data-i="' + i + '" aria-pressed="' + on + '">' + esc(n) + '</button>';
-  });
-  $('chips').innerHTML = h;
-  $('who-label').textContent = form.type === 'col' ? 'Dividir entre:' : 'De quem é?';
-  $('todos').style.display = form.type === 'col' ? '' : 'none';
-  $('todos').textContent = form.who.length === state.people.length ? 'Limpar' : 'Todos';
-}
-function renderPreview(){
-  var total = parsePrice($('preco').value) * form.qty;
-  var el = $('preview');
-  if(!total){ el.innerHTML = ''; return; }
-  if(form.type === 'col'){
-    if(!form.who.length){ el.innerHTML = ''; return; }
-    var per = Math.round(total / form.who.length);
-    el.innerHTML = 'Total <strong>' + brl(total) + '</strong> · cada um paga <strong>' + brl(per) + '</strong>';
-  } else {
-    el.innerHTML = 'Total <strong>' + brl(total) + '</strong>' + (form.who.length ? ' · ' + esc(state.people[form.who[0]]) : '');
+async function initRemote() {
+  setStatus("conn");
+  setTimeout(() => { if (!everConnected && !hadError) setStatus("off"); }, 8000);
+  try {
+    const base = "https://www.gstatic.com/firebasejs/" + FB_VERSION + "/";
+    const [appM, fsM] = await Promise.all([
+      import(base + "firebase-app.js"),
+      import(base + "firebase-firestore.js")
+    ]);
+    const app = appM.initializeApp(FIREBASE_CONFIG);
+    const db = fsM.getFirestore(app);
+
+    fsx = {
+      db,
+      doc: fsM.doc,
+      collection: fsM.collection,
+      query: fsM.query,
+      orderBy: fsM.orderBy,
+      onSnapshot: fsM.onSnapshot,
+      setDoc: fsM.setDoc,
+      deleteDoc: fsM.deleteDoc,
+      writeBatch: fsM.writeBatch,
+      getDocs: fsM.getDocs
+    };
+
+    mode = "remote";
+
+    // ----- Config (nomes das pessoas) -----
+    const configRef = fsM.doc(db, "salas", SALA);
+    fsM.onSnapshot(configRef, snap => {
+      hadError = false;
+      const v = snap.exists() ? snap.data() : {};
+      state.people = defaultNames.map((d, i) => {
+        const n = v.people && v.people[i];
+        return (typeof n === "string" && n.trim()) ? n : d;
+      });
+      if (!everConnected) { everConnected = true; connected = true; }
+      refreshStatus();
+      renderAll();
+      const a = document.activeElement;
+      if (!(a && a.tagName === "INPUT" && $("people").contains(a))) renderPeople();
+    }, err => { console.error(err); hadError = true; refreshStatus(); });
+
+    // ----- Itens do carrinho -----
+    fsM.onSnapshot(
+      fsM.query(fsM.collection(db, "salas", SALA, "itens"), fsM.orderBy("ts", "desc")),
+      snap => {
+        hadError = false;
+        if (!everConnected) { everConnected = true; connected = true; refreshStatus(); }
+        state.items = snap.docs.map(d => {
+          const o = d.data();
+          const who = Array.isArray(o.who)
+            ? o.who.filter(n => n >= 0 && n < N)
+            : String(o.who === undefined ? "" : o.who).split(",").filter(x => x !== "").map(Number).filter(n => n >= 0 && n < N);
+          return {
+            id: d.id,
+            name: o.name || "Item",
+            price: +o.price || 0,
+            qty: +o.qty || 1,
+            type: o.type === "ind" ? "ind" : "col",
+            who,
+            ts: +o.ts || 0
+          };
+        });
+        sortState();
+        renderAll();
+      },
+      err => { console.error(err); hadError = true; refreshStatus(); }
+    );
+
+    // ----- Lista de compras -----
+    fsM.onSnapshot(
+      fsM.query(fsM.collection(db, "salas", SALA, "shopping"), fsM.orderBy("ts", "asc")),
+      snap => {
+        hadError = false;
+        state.shopping = snap.docs.map(d => {
+          const o = d.data();
+          return { id: d.id, name: o.name || "Item", done: !!o.done, ts: +o.ts || 0 };
+        });
+        sortState();
+        renderAll();
+      },
+      err => { console.error(err); hadError = true; refreshStatus(); }
+    );
+  } catch (e) {
+    console.error(e); mode = "failed"; setStatus("off");
   }
 }
-function setType(t){
+
+/* ---------- formulário do carrinho ---------- */
+const form = { type: "col", qty: 1, who: allIdx(), editing: null, fromList: null };
+
+function renderChips() {
+  $("chips").innerHTML = state.people.map((n, i) => {
+    const on = form.who.indexOf(i) > -1;
+    return '<button type="button" class="chip ' + (form.type === "col" ? "col" : "ind") + (on ? " on" : "") + '" data-i="' + i + '" aria-pressed="' + on + '">' + esc(n) + "</button>";
+  }).join("");
+  $("who-label").textContent = form.type === "col" ? "Dividir entre:" : "De quem é?";
+  $("todos").style.display = form.type === "col" ? "" : "none";
+  $("todos").textContent = form.who.length === N ? "Limpar" : "Todos";
+}
+function renderPreview() {
+  const total = parsePrice($("preco").value) * form.qty, el = $("preview");
+  if (!total || !form.who.length) { el.innerHTML = ""; return; }
+  if (form.type === "col") el.innerHTML = "Total <strong>" + brl(total) + "</strong> · cada um paga <strong>" + brl(Math.round(total / form.who.length)) + "</strong>";
+  else el.innerHTML = "Total <strong>" + brl(total) + "</strong> · " + esc(state.people[form.who[0]]);
+}
+function setType(t) {
   form.type = t;
-  $('t-col').classList.toggle('on', t === 'col');
-  $('t-ind').classList.toggle('on', t === 'ind');
-  form.who = t === 'col' ? allIdx() : [];
+  $("t-col").classList.toggle("on", t === "col");
+  $("t-ind").classList.toggle("on", t === "ind");
+  form.who = t === "col" ? allIdx() : (me !== null ? [me] : []);
   renderChips(); renderPreview();
 }
-$('t-col').onclick = function(){ setType('col'); };
-$('t-ind').onclick = function(){ setType('ind'); };
-$('chips').onclick = function(e){
-  var b = e.target.closest('.chip'); if(!b) return;
-  var i = +b.dataset.i;
-  if(form.type === 'ind'){ form.who = [i]; }
-  else {
-    var k = form.who.indexOf(i);
-    if(k > -1) form.who.splice(k,1); else form.who.push(i);
-    form.who.sort(function(a,b){ return a-b; });
-  }
-  $('err').textContent = '';
+$("t-col").onclick = () => setType("col");
+$("t-ind").onclick = () => setType("ind");
+$("chips").onclick = e => {
+  const b = e.target.closest(".chip"); if (!b) return;
+  const i = +b.dataset.i;
+  if (form.type === "ind") form.who = [i];
+  else { const k = form.who.indexOf(i); if (k > -1) form.who.splice(k, 1); else form.who.push(i); form.who.sort((a, b) => a - b); }
+  $("err").textContent = "";
   renderChips(); renderPreview();
 };
-$('todos').onclick = function(){
-  form.who = form.who.length === state.people.length ? [] : allIdx();
-  renderChips(); renderPreview();
-};
-$('menos').onclick = function(){ form.qty = Math.max(1, form.qty-1); $('qtd').textContent = form.qty; renderPreview(); };
-$('mais').onclick  = function(){ form.qty = Math.min(99, form.qty+1); $('qtd').textContent = form.qty; renderPreview(); };
-$('preco').oninput = renderPreview;
-$('nome').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); $('preco').focus(); } });
-$('preco').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addItem(); } });
+$("todos").onclick = () => { form.who = form.who.length === N ? [] : allIdx(); renderChips(); renderPreview(); };
+$("menos").onclick = () => { form.qty = Math.max(1, form.qty - 1); $("qtd").textContent = form.qty; renderPreview(); };
+$("mais").onclick = () => { form.qty = Math.min(99, form.qty + 1); $("qtd").textContent = form.qty; renderPreview(); };
+$("preco").oninput = renderPreview;
+$("nome").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); $("preco").focus(); } });
+$("preco").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addItem(); } });
 
-function resetForm(){
+function resetForm() {
   form.editing = null; form.fromList = null; form.qty = 1;
-  $('nome').value = ''; $('preco').value = ''; $('qtd').textContent = '1';
-  $('form').classList.remove('editing');
-  $('add').textContent = 'ADICIONAR ITEM';
-  $('cancel').hidden = true; $('err').textContent = '';
+  $("nome").value = ""; $("preco").value = ""; $("qtd").textContent = "1";
+  $("form").classList.remove("editing");
+  $("add").textContent = "ADICIONAR ITEM";
+  $("cancel").hidden = true; $("err").textContent = "";
   setType(form.type);
 }
-
-function addItem(){
-  var price = parsePrice($('preco').value);
-  if(!price){ $('err').textContent = 'Digite o preço do item.'; $('preco').focus(); return; }
-  if(!form.who.length){
-    $('err').textContent = form.type === 'col' ? 'Escolha pelo menos uma pessoa.' : 'Escolha de quem é o item.';
-    return;
-  }
-
-  var itemData = {
-    name: $('nome').value.trim() || 'Item sem nome',
-    price: price,
-    qty: form.qty,
-    type: form.type,
-    who: form.who.slice()
+function addItem() {
+  const price = parsePrice($("preco").value);
+  if (!price) { $("err").textContent = "Digite o preço do item."; $("preco").focus(); return; }
+  if (!form.who.length) { $("err").textContent = form.type === "col" ? "Escolha pelo menos uma pessoa." : "Escolha de quem é o item."; return; }
+  const old = form.editing ? state.items.find(x => String(x.id) === String(form.editing)) : null;
+  const it = {
+    id: form.editing || uid(),
+    name: $("nome").value.trim() || "Item sem nome",
+    price, qty: form.qty, type: form.type, who: form.who.slice(),
+    ts: old ? old.ts : Date.now()
   };
-
-  if(form.editing){
-    updateDoc(doc(db, 'mercado_itens', String(form.editing)), itemData)
-      .then(function(){ toast('Item atualizado'); })
-      .catch(function(e){ console.error(e); toast('Erro ao salvar'); });
-  } else {
-    itemData.order = Date.now();
-    addDoc(ITENS_COL, itemData)
-      .then(function(){ toast('Adicionado: ' + itemData.name); })
-      .catch(function(e){ console.error(e); toast('Erro ao salvar'); });
-
-    // marca itens correspondentes da lista de compras como comprados
-    var key = norm(itemData.name);
-    var changed = false;
-    state.shopping.forEach(function(x){
-      if(!x.done && (x.id === form.fromList || norm(x.name) === key)){ x.done = true; changed = true; }
-    });
-    if(changed) saveConfig();
+  if (!store.putItem(it)) return;
+  if (old) toast("Item atualizado");
+  else {
+    toast("Adicionado: " + it.name);
+    const key = norm(it.name);
+    state.shopping.filter(x => !x.done && (String(x.id) === String(form.fromList) || norm(x.name) === key))
+      .forEach(x => store.putShop({ ...x, done: true }));
   }
-
   resetForm();
-  $('nome').focus();
+  $("nome").focus();
 }
-$('add').onclick = addItem;
-$('cancel').onclick = function(){ resetForm(); };
+$("add").onclick = addItem;
+$("cancel").onclick = resetForm;
 
-/* ============================================================
-   CARRINHO
-   ============================================================ */
-function renderList(){
-  var box = $('lista');
-  $('count').textContent = state.items.length ? state.items.length + (state.items.length === 1 ? ' item' : ' itens') : '';
-  if(!state.items.length){
-    box.innerHTML = '<div class="empty">Carrinho vazio.<br>Adicione o primeiro item acima.</div>';
-    return;
-  }
-  box.innerHTML = state.items.map(function(it){
-    var tot = itemTotal(it), sub;
-    if(it.type === 'col'){
-      var all = it.who.length === state.people.length;
-      var per = Math.round(tot / it.who.length);
-      sub = '<b class="t-col">Coletivo</b> · ' + (all ? 'todos' : it.who.length + ' pessoas') + ' · ' + brl(per) + ' cada';
-    } else {
-      sub = '<b class="t-ind">Individual</b> · ' + esc(state.people[it.who[0]] || '?');
-    }
-    var q = it.qty > 1 ? ' <span style="color:var(--muted);font-weight:500">×' + it.qty + '</span>' : '';
-    return '<div class="item ' + it.type + '"><div class="info"><div class="nm">' + esc(it.name) + q + '</div><div class="sub">' + sub + '</div></div><div class="val">' + brl(tot) + '</div><div class="acts"><button class="icon" data-edit="' + it.id + '" aria-label="Editar">✏️</button><button class="icon" data-del="' + it.id + '" aria-label="Remover">🗑️</button></div></div>';
-  }).join('');
+/* ---------- carrinho (lista de itens) ---------- */
+function renderList() {
+  const box = $("lista"), n = state.items.length;
+  $("count").textContent = n ? n + (n === 1 ? " item" : " itens") : "";
+  if (!n) { box.innerHTML = '<div class="empty">Carrinho vazio.<br>Adicione o primeiro item acima.</div>'; return; }
+  box.innerHTML = state.items.map(it => {
+    const tot = itemTotal(it); let sub;
+    if (it.type === "col") {
+      const all = it.who.length === N, per = Math.round(tot / Math.max(1, it.who.length));
+      sub = '<b class="t-col">Coletivo</b> · ' + (all ? "todos" : it.who.length + " pessoas") + " · " + brl(per) + " cada";
+    } else sub = '<b class="t-ind">Individual</b> · ' + esc(state.people[it.who[0]] || "?");
+    const q = it.qty > 1 ? ' <span style="color:var(--muted);font-weight:500">×' + it.qty + "</span>" : "";
+    return '<div class="item ' + it.type + '"><div class="info"><div class="nm">' + esc(it.name) + q + '</div><div class="sub">' + sub + '</div></div><div class="val">' + brl(tot) + '</div><div class="acts"><button class="icon" data-edit="' + it.id + '" aria-label="Editar ' + esc(it.name) + '">✏️</button><button class="icon" data-del="' + it.id + '" aria-label="Remover ' + esc(it.name) + '">🗑️</button></div></div>';
+  }).join("");
 }
-
-$('lista').onclick = function(e){
-  var d = e.target.closest('[data-del]');
-  var ed = e.target.closest('[data-edit]');
-  if(d){
-    var id = d.dataset.del;
-    var it = state.items.filter(function(x){ return String(x.id) === id; })[0];
-    deleteDoc(doc(db, 'mercado_itens', id))
-      .then(function(){ toast('Removido: ' + (it ? it.name : 'item')); })
-      .catch(function(e){ console.error(e); toast('Erro ao remover'); });
-  } else if(ed){
-    var id2 = ed.dataset.edit;
-    var it2 = state.items.filter(function(x){ return String(x.id) === id2; })[0];
-    if(!it2) return;
-    form.editing = it2.id;
-    form.type = it2.type;
-    form.qty = it2.qty;
-    form.who = it2.who.slice();
-    $('nome').value = it2.name;
-    $('preco').value = (it2.price/100).toFixed(2).replace('.',',');
-    $('qtd').textContent = it2.qty;
-    $('t-col').classList.toggle('on', it2.type === 'col');
-    $('t-ind').classList.toggle('on', it2.type === 'ind');
-    $('form').classList.add('editing');
-    $('add').textContent = 'SALVAR ALTERAÇÃO';
-    $('cancel').hidden = false;
+$("lista").onclick = e => {
+  const d = e.target.closest("[data-del]"), ed = e.target.closest("[data-edit]");
+  if (d) {
+    const id = d.dataset.del, it = state.items.find(x => String(x.id) === id);
+    store.delItem(id); toast("Removido: " + (it ? it.name : "item"));
+  } else if (ed) {
+    const it = state.items.find(x => String(x.id) === ed.dataset.edit); if (!it) return;
+    form.editing = it.id; form.fromList = null; form.type = it.type; form.qty = it.qty; form.who = it.who.slice();
+    $("nome").value = it.name; $("preco").value = (it.price / 100).toFixed(2).replace(".", ","); $("qtd").textContent = it.qty;
+    $("t-col").classList.toggle("on", it.type === "col"); $("t-ind").classList.toggle("on", it.type === "ind");
+    $("form").classList.add("editing"); $("add").textContent = "SALVAR ALTERAÇÃO"; $("cancel").hidden = false;
     renderChips(); renderPreview();
-    window.scrollTo({ top:0, behavior:'smooth' });
-    $('nome').focus();
+    goTab("itens"); $("nome").focus();
   }
 };
 
-/* ============================================================
-   RESUMO
-   ============================================================ */
-function compute(){
-  var res = state.people.map(function(){ return { col:0, ind:0, lines:[] }; });
-  var total = 0;
-  state.items.forEach(function(it){
-    var tot = itemTotal(it); total += tot;
-    var parts = split(tot, it.who);
-    it.who.forEach(function(p){
-      if(!res[p]) return;
-      if(it.type === 'col') res[p].col += parts[p];
-      else res[p].ind += parts[p];
-      res[p].lines.push({ name: it.name + (it.qty > 1 ? ' ×' + it.qty : ''), v: parts[p], type: it.type });
+/* ---------- resumo ---------- */
+function compute() {
+  const res = state.people.map(() => ({ col: 0, ind: 0, lines: [] })); let total = 0;
+  state.items.forEach(it => {
+    const tot = itemTotal(it); total += tot;
+    const parts = split(tot, it.who);
+    it.who.forEach(p => {
+      if (!res[p]) return;
+      if (it.type === "col") res[p].col += parts[p]; else res[p].ind += parts[p];
+      res[p].lines.push({ name: it.name + (it.qty > 1 ? " ×" + it.qty : ""), v: parts[p], type: it.type });
     });
   });
-  return { res: res, total: total };
+  return { res, total };
 }
-
-function renderSummary(){
-  var c = compute();
-  $('g-total').textContent = brl(c.total);
-  var nc = state.items.filter(function(i){ return i.type === 'col'; }).length;
-  $('g-sub').textContent = state.items.length + ' itens · ' + nc + ' coletivos';
-
-  var openIds = [];
-  document.querySelectorAll('#cards details[open]').forEach(function(d){ openIds.push(d.dataset.p); });
-
-  $('cards').innerHTML = state.people.map(function(n,i){
-    var r = c.res[i], t = r.col + r.ind;
-    var lines = r.lines.length
-      ? r.lines.map(function(l){
-          return '<div class="ln"><span>' + esc(l.name) + '<span class="tag ' + (l.type === 'col' ? 'c' : 'i') + '">' + (l.type === 'col' ? 'coletivo' : 'individual') + '</span></span><span>' + brl(l.v) + '</span></div>';
-        }).join('')
-      : '<div class="ln"><span style="color:var(--muted)">Nenhum item ainda</span></div>';
-    return '<details class="card" data-p="' + i + '"' + (openIds.indexOf(String(i)) > -1 ? ' open' : '') + '><summary><div class="pn">' + esc(n) + '<small>coletivo ' + brl(r.col) + ' · individual ' + brl(r.ind) + '</small></div><div class="tot">' + brl(t) + '</div><span class="chev">›</span></summary><div class="body">' + lines + '</div></details>';
-  }).join('');
-
-  $('dock-total').textContent = brl(c.total);
+function renderSummary() {
+  const c = compute();
+  $("g-total").textContent = brl(c.total);
+  const nc = state.items.filter(i => i.type === "col").length;
+  $("g-sub").textContent = state.items.length + " itens · " + nc + " coletivos";
+  const open = []; document.querySelectorAll("#cards details[open]").forEach(d => open.push(d.dataset.p));
+  $("cards").innerHTML = state.people.map((n, i) => {
+    const r = c.res[i], t = r.col + r.ind;
+    const lines = r.lines.length ? r.lines.map(l =>
+      '<div class="ln"><span>' + esc(l.name) + '<span class="tag ' + (l.type === "col" ? "c" : "i") + '">' + (l.type === "col" ? "coletivo" : "individual") + "</span></span><span>" + brl(l.v) + "</span></div>"
+    ).join("") : '<div class="ln"><span style="color:var(--muted)">Nenhum item ainda</span></div>';
+    return '<details class="card" data-p="' + i + '"' + (open.indexOf(String(i)) > -1 ? " open" : "") + '><summary><div class="pn">' + esc(n) + (me === i ? '<span class="tag c"> (você)</span>' : "") + "<small>coletivo " + brl(r.col) + " · individual " + brl(r.ind) + '</small></div><div class="tot">' + brl(t) + '</div><span class="chev">›</span></summary><div class="body">' + lines + "</div></details>";
+  }).join("");
+  $("dock-total").textContent = brl(c.total);
 }
-
-$('copiar').onclick = function(){
-  var c = compute();
-  var txt = '🛒 CONEDU 2026 - SUPERMERCADO\nTotal: ' + brl(c.total) + '\n\n';
-  state.people.forEach(function(n,i){
-    var r = c.res[i];
-    txt += n + ': ' + brl(r.col + r.ind) + ' (coletivo ' + brl(r.col) + ' + individual ' + brl(r.ind) + ')\n';
-  });
-  var done = function(){ toast('Resumo copiado!'); };
-  var fallback = function(){
-    try{
-      var ta = document.createElement('textarea');
-      ta.value = txt; ta.style.position = 'fixed'; ta.style.opacity = '0';
-      document.body.appendChild(ta); ta.select();
-      document.execCommand('copy'); document.body.removeChild(ta); done();
-    } catch(e){ toast('Não foi possível copiar'); }
+$("copiar").onclick = () => {
+  const c = compute();
+  let txt = "🛒 CONEDU 2026 - SUPERMERCADO\nTotal: " + brl(c.total) + "\n\n";
+  state.people.forEach((n, i) => { const r = c.res[i]; txt += n + ": " + brl(r.col + r.ind) + " (coletivo " + brl(r.col) + " + individual " + brl(r.ind) + ")\n"; });
+  const done = () => toast("Resumo copiado!");
+  const fallback = () => {
+    try { const ta = document.createElement("textarea"); ta.value = txt; ta.style.position = "fixed"; ta.style.opacity = "0"; document.body.appendChild(ta); ta.select(); document.execCommand("copy"); document.body.removeChild(ta); done(); }
+    catch (e) { toast("Não foi possível copiar"); }
   };
-  try{
-    if(navigator.clipboard && navigator.clipboard.writeText){ navigator.clipboard.writeText(txt).then(done, fallback); }
-    else fallback();
-  } catch(e){ fallback(); }
+  try { if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(txt).then(done, fallback); else fallback(); } catch (e) { fallback(); }
 };
 
-/* ============================================================
-   PESSOAS
-   ============================================================ */
-function renderPeople(){
-  var box = $('people');
-  var inputs = box.querySelectorAll('input');
-  if(inputs.length === state.people.length){
-    // Atualiza apenas inputs que não estão em foco, pra não atrapalhar digitação
-    state.people.forEach(function(n, i){
-      var inp = inputs[i];
-      if(inp && document.activeElement !== inp && inp.value !== n) inp.value = n;
-    });
-  } else {
-    box.innerHTML = state.people.map(function(n,i){
-      return '<div class="p"><i>' + (i+1) + '</i><input class="input" data-n="' + i + '" value="' + esc(n) + '" maxlength="20" aria-label="Nome da pessoa ' + (i+1) + '"></div>';
-    }).join('');
-  }
+/* ---------- pessoas ---------- */
+function renderPeople() {
+  $("people").innerHTML = state.people.map((n, i) =>
+    '<div class="p"><i>' + (i + 1) + '</i><input class="input" data-n="' + i + '" value="' + esc(n) + '" maxlength="20" aria-label="Nome da pessoa ' + (i + 1) + '"><button type="button" class="me' + (me === i ? " on" : "") + '" data-me="' + i + '">' + (me === i ? "✓ Sou eu" : "Sou eu") + "</button></div>"
+  ).join("");
 }
-
-$('people').addEventListener('input', function(e){
-  var i = e.target.dataset.n;
-  if(i === undefined) return;
+let nameTimer;
+$("people").addEventListener("input", e => {
+  const i = e.target.dataset.n; if (i === undefined) return;
   state.people[+i] = e.target.value.trim() || defaultNames[+i];
-  renderChips(); renderList(); renderSummary(); renderPreview();
-  savePeopleSoon();
+  renderChips(); renderPreview(); renderList(); renderSummary();
+  clearTimeout(nameTimer);
+  nameTimer = setTimeout(() => store.putName(+i, state.people[+i]), 500);
 });
-
-var armed = false;
-$('limpar').onclick = function(){
-  var b = $('limpar');
-  if(!armed){
-    armed = true; b.textContent = 'Toque de novo para apagar tudo';
-    setTimeout(function(){ armed = false; b.textContent = 'Limpar todos os itens'; }, 3500);
-    return;
-  }
-  armed = false; b.textContent = 'Limpar todos os itens';
-  getDocs(ITENS_COL).then(function(snap){
-    var batch = writeBatch(db);
-    snap.forEach(function(d){ batch.delete(d.ref); });
-    return batch.commit();
-  }).then(function(){
-    toast('Carrinho limpo');
-  }).catch(function(e){
-    console.error(e); toast('Erro ao limpar');
-  });
+$("people").addEventListener("click", e => {
+  const b = e.target.closest("[data-me]"); if (!b) return;
+  const i = +b.dataset.me;
+  me = me === i ? null : i;
+  try { if (me === null) localStorage.removeItem(ME_KEY); else localStorage.setItem(ME_KEY, String(me)); } catch (err) {}
+  if (form.type === "ind" && !form.editing) form.who = me !== null ? [me] : [];
+  renderPeople(); renderAll();
+});
+let armed = false;
+$("limpar").onclick = () => {
+  const b = $("limpar");
+  if (!armed) { armed = true; b.textContent = "Toque de novo para apagar o carrinho de todos"; setTimeout(() => { armed = false; b.textContent = "Limpar o carrinho (para todos)"; }, 3500); return; }
+  store.clearItems(); armed = false; b.textContent = "Limpar o carrinho (para todos)"; toast("Carrinho limpo");
 };
 
-/* ============================================================
-   ABAS
-   ============================================================ */
-function goTab(t){
-  document.querySelectorAll('.tabs button').forEach(function(x){ x.setAttribute('aria-selected', x.dataset.tab === t); });
-  document.querySelectorAll('.panel').forEach(function(p){ p.classList.toggle('on', p.id === 'p-' + t); });
-  window.scrollTo(0,0);
+/* ---------- abas ---------- */
+function goTab(t) {
+  document.querySelectorAll(".tabs button").forEach(x => x.setAttribute("aria-selected", x.dataset.tab === t));
+  document.querySelectorAll(".panel").forEach(p => p.classList.toggle("on", p.id === "p-" + t));
+  window.scrollTo(0, 0);
 }
-document.querySelector('.tabs').onclick = function(e){
-  var b = e.target.closest('button'); if(!b) return;
-  goTab(b.dataset.tab);
-};
+document.querySelector(".tabs").onclick = e => { const b = e.target.closest("button"); if (b) goTab(b.dataset.tab); };
 
-/* ============================================================
-   LISTA DE COMPRAS
-   ============================================================ */
-function addShopping(){
-  var inp = $('sh-nome');
-  var parts = inp.value.split(/[,;\n]/).map(function(x){ return x.trim(); }).filter(Boolean);
-  if(!parts.length){ inp.focus(); return; }
-  var added = 0;
-  parts.forEach(function(n){
-    var k = norm(n);
-    var dup = state.shopping.some(function(x){ return !x.done && norm(x.name) === k; });
-    if(dup) return;
-    state.shopping.push({
-      id: Date.now().toString(36) + Math.random().toString(36).slice(2,7),
-      name: n.charAt(0).toUpperCase() + n.slice(1),
-      done: false
-    });
+/* ---------- lista de compras ---------- */
+function addShopping() {
+  const inp = $("sh-nome");
+  const parts = inp.value.split(/[,;\n]/).map(x => x.trim()).filter(Boolean);
+  if (!parts.length) { inp.focus(); return; }
+  if (!ready()) return;
+  let added = 0; const seen = new Set(state.shopping.filter(x => !x.done).map(x => norm(x.name)));
+  parts.forEach((n, k) => {
+    const key = norm(n); if (seen.has(key)) return; seen.add(key);
+    store.putShop({ id: uid(), name: n.charAt(0).toUpperCase() + n.slice(1), done: false, ts: Date.now() + k });
     added++;
   });
-  inp.value = '';
-  if(added) saveConfig();
-  renderShopping();
-  inp.focus();
-  toast(added ? (added === 1 ? 'Adicionado à lista' : added + ' itens adicionados') : 'Já está na lista');
+  inp.value = ""; inp.focus();
+  toast(added ? (added === 1 ? "Adicionado à lista" : added + " itens adicionados") : "Já está na lista");
 }
-$('sh-add').onclick = addShopping;
-$('sh-nome').addEventListener('keydown', function(e){ if(e.key === 'Enter'){ e.preventDefault(); addShopping(); } });
-
-function shRow(x){
-  return '<div class="sh' + (x.done ? ' done' : '') + '">' +
-    '<button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + '</span></button>' +
-    (x.done ? '' : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
-    '<button type="button" class="icon" data-shdel="' + x.id + '" aria-label="Remover da lista">🗑️</button>' +
-  '</div>';
+$("sh-add").onclick = addShopping;
+$("sh-nome").addEventListener("keydown", e => { if (e.key === "Enter") { e.preventDefault(); addShopping(); } });
+function shRow(x) {
+  return '<div class="sh' + (x.done ? " done" : "") + '"><button type="button" class="tog" data-tog="' + x.id + '" aria-pressed="' + x.done + '"><span class="box">✓</span><span class="nm">' + esc(x.name) + "</span></button>" +
+    (x.done ? "" : '<button type="button" class="price" data-price="' + x.id + '">Lançar preço</button>') +
+    '<button type="button" class="icon" data-shdel="' + x.id + '" aria-label="Remover ' + esc(x.name) + ' da lista">🗑️</button></div>';
 }
-
-function renderShopping(){
-  var todo = state.shopping.filter(function(x){ return !x.done; });
-  var done = state.shopping.filter(function(x){ return x.done; });
-  var n = state.shopping.length;
-  $('sh-count').textContent = n ? done.length + ' de ' + n + ' comprados' : 'Sua lista está vazia';
-  $('sh-bar').style.width = n ? Math.round(done.length / n * 100) + '%' : '0';
-  $('sh-clear').hidden = !done.length;
-  var h = '';
-  if(!n){
-    h = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
-  } else {
-    h += todo.length ? todo.map(shRow).join('') : '<div class="empty">Tudo comprado! 🎉</div>';
-    if(done.length) h += '<div class="sub-h">Já comprados</div>' + done.map(shRow).join('');
+function renderShopping() {
+  const todo = state.shopping.filter(x => !x.done), done = state.shopping.filter(x => x.done), n = state.shopping.length;
+  $("sh-count").textContent = n ? done.length + " de " + n + " comprados" : "Sua lista está vazia";
+  $("sh-bar").style.width = n ? Math.round(done.length / n * 100) + "%" : "0";
+  $("sh-clear").hidden = !done.length;
+  let h = "";
+  if (!n) h = '<div class="empty">Nenhum item na lista.<br>Anote acima o que precisam comprar.</div>';
+  else {
+    h += todo.length ? todo.map(shRow).join("") : '<div class="empty">Tudo comprado! 🎉</div>';
+    if (done.length) h += '<div class="sub-h">Já comprados</div>' + done.map(shRow).join("");
   }
-  $('sh-list').innerHTML = h;
+  $("sh-list").innerHTML = h;
 }
-
-$('sh-list').onclick = function(e){
-  var t = e.target.closest('[data-tog]');
-  var p = e.target.closest('[data-price]');
-  var d = e.target.closest('[data-shdel]');
-  function find(id){ return state.shopping.filter(function(x){ return String(x.id) === id; })[0]; }
-
-  if(t){
-    var x = find(t.dataset.tog);
-    if(x){ x.done = !x.done; saveConfig(); renderShopping(); }
-  } else if(d){
-    state.shopping = state.shopping.filter(function(x){ return String(x.id) !== d.dataset.shdel; });
-    saveConfig(); renderShopping();
-  } else if(p){
-    var it = find(p.dataset.price);
-    if(!it) return;
-    if(form.editing) resetForm();
+$("sh-list").onclick = e => {
+  const t = e.target.closest("[data-tog]"), p = e.target.closest("[data-price]"), d = e.target.closest("[data-shdel]");
+  const find = id => state.shopping.find(x => String(x.id) === id);
+  if (t) { const x = find(t.dataset.tog); if (x) store.putShop({ ...x, done: !x.done }); }
+  else if (d) store.delShop(d.dataset.shdel);
+  else if (p) {
+    const it = find(p.dataset.price); if (!it) return;
+    if (form.editing) resetForm();
     form.fromList = it.id;
-    $('nome').value = it.name;
-    $('preco').value = '';
-    goTab('itens');
-    $('preco').focus();
+    $("nome").value = it.name; $("preco").value = "";
+    goTab("itens"); $("preco").focus();
   }
 };
+$("sh-clear").onclick = () => store.clearShopDone();
 
-$('sh-clear').onclick = function(){
-  state.shopping = state.shopping.filter(function(x){ return !x.done; });
-  saveConfig(); renderShopping();
-};
-
-/* ============================================================
-   RENDER GERAL
-   ============================================================ */
-function renderAll(){
-  renderList();
-  renderSummary();
-  renderChips();
-  renderPreview();
-  renderShopping();
-}
-
-/* ============================================================
-   SINCRONIZAÇÃO EM TEMPO REAL (Firebase)
-   ============================================================ */
-// Primeira renderização com defaults, pra tela não ficar vazia
-renderPeople();
-renderAll();
-
-// Config: nomes das pessoas + lista de compras
-onSnapshot(CONFIG_REF, function(snap){
-  if(snap.exists()){
-    var d = snap.data();
-    if(Array.isArray(d.people) && d.people.length === 5){
-      state.people = d.people.slice();
-    }
-    if(Array.isArray(d.shopping)){
-      state.shopping = d.shopping;
-    }
-    renderPeople();
-    renderChips();
-    renderList();
-    renderSummary();
-    renderPreview();
-    renderShopping();
-  } else {
-    // Primeiro acesso: cria o doc com os valores padrão
-    setDoc(CONFIG_REF, { people: defaultNames, shopping: [] }).catch(function(e){
-      console.error('criar config', e);
-      toast('Erro ao conectar. Verifique as regras do Firestore.');
-    });
-  }
-}, function(err){
-  console.error('onSnapshot config', err);
-  toast('Erro ao ler dados. Verifique as regras do Firestore.');
-});
-
-// Itens do carrinho (mais novo primeiro)
-onSnapshot(
-  query(ITENS_COL, orderBy('order', 'desc')),
-  function(snap){
-    state.items = snap.docs.map(function(d){
-      var data = d.data();
-      return {
-        id: d.id,
-        name: data.name,
-        price: data.price,
-        qty: data.qty,
-        type: data.type,
-        who: Array.isArray(data.who) ? data.who : []
-      };
-    });
-    renderList();
-    renderSummary();
-  },
-  function(err){
-    console.error('onSnapshot itens', err);
-    toast('Erro ao ler itens. Verifique as regras do Firestore.');
-  }
-);
+/* ---------- início ---------- */
+function renderAll() { renderList(); renderSummary(); renderChips(); renderPreview(); renderShopping(); }
+renderPeople(); renderAll();
+initRemote();
 </script>
 </body>
 </html>
