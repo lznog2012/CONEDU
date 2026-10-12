@@ -1,7 +1,0 @@
-{
-  "rewrites": [
-    { "source": "/mercado/(.*)", "destination": "/mercado/index.html" },
-    { "source": "/contas/(.*)", "destination": "/contas/index.html" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ]
-}
